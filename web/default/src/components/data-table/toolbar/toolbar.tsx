@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import * as React from 'react'
 import { useState, type ReactNode } from 'react'
-import { type Table } from '@tanstack/react-table'
+import type { Table } from '@tanstack/react-table'
 import { useDebounce } from '@/hooks'
 import { ChevronDown, Loader2, X as Cross2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -83,13 +83,6 @@ export type DataTableToolbarProps<TData> = {
    */
   hasAdditionalFilters?: boolean
   /**
-   * Override the internal active-filters detection. When provided,
-   * controls Reset button visibility directly. Use when the page has
-   * default filter values that differ from "empty" — pass `true` when
-   * current filters deviate from the initial defaults.
-   */
-  hasActiveFilters?: boolean
-  /**
    * Callback invoked when the user clicks Reset.
    */
   onReset?: () => void
@@ -122,6 +115,12 @@ export type DataTableToolbarProps<TData> = {
    * Hide the View Options (column visibility) dropdown.
    */
   hideViewOptions?: boolean
+  /**
+   * Optional view-mode toggle (e.g. table vs. card) rendered in the right
+   * action cluster, before the View Options dropdown. Typically a
+   * {@link DataTableViewModeToggle}. Omitted by default.
+   */
+  viewToggle?: ReactNode
   /**
    * Content rendered on the LEFT side of the secondary action row. When
    * provided the toolbar splits into two visual rows:
@@ -159,11 +158,10 @@ export function DataTableToolbar<TData>(props: DataTableToolbarProps<TData>) {
   const hasExpandable = props.expandable != null
   const hasSearch = props.onSearch != null
 
-  const hasActiveFilters =
-    props.hasActiveFilters ??
-    (props.table.getState().columnFilters.length > 0 ||
-      !!props.table.getState().globalFilter ||
-      !!props.hasAdditionalFilters)
+  const isFiltered =
+    props.table.getState().columnFilters.length > 0 ||
+    !!props.table.getState().globalFilter ||
+    !!props.hasAdditionalFilters
 
   const placeholder = props.searchPlaceholder ?? t('Filter...')
   const currentSearchValue = props.searchKey
@@ -284,20 +282,25 @@ export function DataTableToolbar<TData>(props: DataTableToolbarProps<TData>) {
   // Reset: outline text-only for form mode (always visible, disabled when
   // nothing to reset); ghost text + X for filter-as-you-type mode (only
   // visible when active filters exist).
-  const resetButton = hasSearch ? (
-    <Button variant='outline' onClick={handleReset} disabled={!hasActiveFilters}>
-      {t('Reset')}
-    </Button>
-  ) : hasActiveFilters ? (
-    <Button
-      variant='ghost'
-      onClick={handleReset}
-      className='text-muted-foreground hover:text-foreground gap-1 px-2'
-    >
-      {t('Reset')}
-      <Cross2Icon />
-    </Button>
-  ) : null
+  let resetButton: ReactNode = null
+  if (hasSearch) {
+    resetButton = (
+      <Button variant='outline' onClick={handleReset} disabled={!isFiltered}>
+        {t('Reset')}
+      </Button>
+    )
+  } else if (isFiltered) {
+    resetButton = (
+      <Button
+        variant='ghost'
+        onClick={handleReset}
+        className='text-muted-foreground hover:text-foreground gap-1 px-2'
+      >
+        {t('Reset')}
+        <Cross2Icon />
+      </Button>
+    )
+  }
 
   const searchButton = hasSearch ? (
     <Button onClick={props.onSearch} disabled={props.searchLoading}>
@@ -309,6 +312,8 @@ export function DataTableToolbar<TData>(props: DataTableToolbarProps<TData>) {
   const viewOptionsNode = !props.hideViewOptions ? (
     <DataTableViewOptions table={props.table} />
   ) : null
+
+  const viewToggleNode = props.viewToggle ?? null
 
   const expandToggle = hasExpandable ? (
     <Button
@@ -358,6 +363,7 @@ export function DataTableToolbar<TData>(props: DataTableToolbarProps<TData>) {
             {props.preActions}
             {resetButton}
             {searchButton}
+            {viewToggleNode}
             {viewOptionsNode}
           </div>
         </div>
@@ -381,6 +387,7 @@ export function DataTableToolbar<TData>(props: DataTableToolbarProps<TData>) {
         {props.preActions}
         {resetButton}
         {searchButton}
+        {viewToggleNode}
         {viewOptionsNode}
         {expandToggle}
       </div>
