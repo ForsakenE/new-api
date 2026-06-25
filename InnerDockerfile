@@ -1,0 +1,68 @@
+FROM hub.iwhalecloud.com:5555/hub_docker/oven/bun:1 AS builder
+
+WORKDIR /build/web
+COPY new-api/web/package.json new-api/web/bun.lock ./
+COPY new-api/web/default/package.json ./default/package.json
+COPY new-api/web/classic/package.json ./classic/package.json
+RUN bun install --frozen-lockfile
+COPY ./new-api/web/default ./default
+COPY ./new-api/VERSION /build/VERSION
+RUN cd default && DISABLE_ESLINT_PLUGIN='true' VITE_REACT_APP_VERSION=$(cat /build/VERSION) bun run build
+
+FROM hub.iwhalecloud.com:5555/hub_docker/oven/bun:1 AS builder-classic
+
+WORKDIR /build/web
+COPY new-api/web/package.json new-api/web/bun.lock ./
+COPY new-api/web/default/package.json ./default/package.json
+COPY new-api/web/classic/package.json ./classic/package.json
+RUN bun install --frozen-lockfile
+# Fix Bun workspace hoisting: .bin/rsbuild shim resolves ../dist/index.js
+# relative to its own location, which breaks when @rsbuild/core is hoisted
+# to the root node_modules. Replace broken shim with proper symlink chain.
+RUN rm -f classic/node_modules/.bin/rsbuild && \
+    ln -s ../@rsbuild/core/bin/rsbuild.js classic/node_modules/.bin/rsbuild && \
+    ( [ -d classic/node_modules/@rsbuild/core ] || \
+      ( mkdir -p classic/node_modules/@rsbuild && \
+        ln -s ../../node_modules/@rsbuild/core classic/node_modules/@rsbuild/core ) ) && \
+    ( [ -d classic/node_modules/@rsbuild/plugin-react ] || \
+      ( ln -s ../../node_modules/@rsbuild/plugin-react classic/node_modules/@rsbuild/plugin-react 2>/dev/null || true ) )
+COPY ./new-api/web/classic ./classic
+COPY ./new-api/VERSION /build/VERSION
+RUN cd classic && VITE_REACT_APP_VERSION=$(cat /build/VERSION) bun run build
+
+FROM hub.iwhalecloud.com:5555/hub_docker/library/golang:1.26.1-alpine AS builder2
+
+ENV GO111MODULE=on CGO_ENABLED=0
+
+ARG TARGETOS
+ARG TARGETARCH
+ENV GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64}
+ENV GOEXPERIMENT=greenteagc
+ARG GOPROXY=https://goproxy.cn,direct
+ENV GOPROXY=${GOPROXY}
+
+WORKDIR /build
+
+ADD new-api/go.mod new-api/go.sum ./
+RUN go mod download
+
+COPY ./new-api .
+COPY --from=builder /build/web/default/dist ./web/default/dist
+COPY --from=builder-classic /build/web/classic/dist ./web/classic/dist
+RUN go build -ldflags "-s -w -X 'github.com/QuantumNous/new-api/common.Version=$(cat VERSION)'" -o new-api
+
+FROM hub.iwhalecloud.com:5555/hub_docker/library/debian:bookworm-slim
+
+# Replace default apt sources with Chinese mirror (CI env has no external network)
+RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources 2>/dev/null || \
+    sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list 2>/dev/null || true
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates tzdata libasan8 wget \
+    && rm -rf /var/lib/apt/lists/* \
+    && update-ca-certificates
+
+COPY --from=builder2 /build/new-api /
+COPY new-api/LICENSE new-api/NOTICE new-api/THIRD-PARTY-LICENSES.md /licenses/
+EXPOSE 3000
+WORKDIR /data
+ENTRYPOINT ["/new-api"]

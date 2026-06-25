@@ -1,0 +1,271 @@
+/* ============ CSS Variables (Light Theme) ============ */
+.user-terms-page {
+  --bg: #f7f8fa;
+  --paper: #ffffff;
+  --text: #1f2937;
+  --muted: #667085;
+  --line: #e5e7eb;
+  --accent: #2563eb;
+  --accent-soft: #eff6ff;
+  --warning: #9a3412;
+  --warning-bg: #fff7ed;
+  --warning-border: #fed7aa;
+  --highlight-bg: var(--accent-soft);
+  --highlight-border: #bfdbfe;
+  --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+/* ============ Dark Theme Overrides ============ */
+.user-terms-page.dark {
+  --bg: #0f1117;
+  --paper: #1a1d2e;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --line: #2d3148;
+  --accent: #60a5fa;
+  --accent-soft: rgba(96, 165, 250, 0.1);
+  --warning: #fb923c;
+  --warning-bg: rgba(251, 146, 60, 0.08);
+  --warning-border: rgba(251, 146, 60, 0.25);
+  --highlight-bg: rgba(96, 165, 250, 0.08);
+  --highlight-border: rgba(96, 165, 250, 0.25);
+  --shadow: 0 18px 45px rgba(0, 0, 0, 0.4);
+}
+
+/* ============ Layout ============ */
+.page {
+  width: min(1120px, calc(100% - 32px));
+  margin: auto;
+  padding-top: 72px;
+  padding-bottom: 72px;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* ============ Sidebar ============ */
+.sidebar {
+  position: sticky;
+  top:80px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+  padding: 18px;
+}
+
+.sidebarTitle {
+  margin: 0 0 12px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.toc {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.tocLink {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+  text-decoration: none;
+}
+
+.tocLink:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* ============ Document ============ */
+.document {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: clamp(24px, 5vw, 56px);
+}
+
+.docHeader {
+  padding-bottom: 24px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.docH1 {
+  margin: 0 0 14px;
+  font-size: clamp(30px, 5vw, 46px);
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+.lead {
+  margin: 0;
+  color: var(--muted);
+  font-size: 17px;
+}
+
+.notice {
+  margin: 24px 0 0;
+  padding: 16px 18px;
+  border: 1px solid var(--warning-border);
+  border-radius: 8px;
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+/* ============ Sections ============ */
+.section {
+  scroll-margin-top: 24px;
+  margin-top: 34px;
+  padding-top: 2px;
+}
+
+.docH2 {
+  margin: 0 0 14px;
+  font-size: 23px;
+  line-height: 1.35;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+.docH3 {
+  margin: 24px 0 10px;
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+.paragraph {
+  margin: 0 0 14px;
+}
+
+.unorderedList {
+  margin: 8px 0 18px;
+  padding-left: 1.3em;
+}
+
+.listItem {
+  margin: 5px 0;
+}
+
+/* ============ Highlight ============ */
+.highlight {
+  background: var(--highlight-bg);
+  border: 1px solid var(--highlight-border);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+
+/* ============ Contact List ============ */
+.contactList {
+  padding-left: 0;
+  list-style: none;
+}
+
+.contactItem {
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.contactItem:last-child {
+  border-bottom: 0;
+}
+
+/* ============ Footer ============ */
+.docFooter {
+  margin-top: 42px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ============ Link ============ */
+.link {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* ============ Responsive ============ */
+@media (max-width: 900px) {
+  .page {
+    grid-template-columns: 1fr;
+    margin: 20px auto;
+  }
+
+  .sidebar {
+    position: static;
+  }
+
+  .toc {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .user-terms-page {
+    font-size: 15px;
+  }
+
+  .page {
+    width: min(100% - 20px, 1120px);
+    margin: 10px auto;
+  }
+
+  .document,
+  .sidebar {
+    border-radius: 6px;
+  }
+
+  .toc {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .user-terms-page {
+    background: #ffffff;
+  }
+
+  .page {
+    display: block;
+    width: 100%;
+    margin: 0;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .document {
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .section {
+    break-inside: avoid;
+  }
+}
