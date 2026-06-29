@@ -24,6 +24,11 @@
   --code-bg: #141827;
   --code-text: #d7def6;
   --code-highlight: #69e7cc;
+  --api-block-bg: #f0f2f8;
+  --api-block-text: #2d3348;
+  --api-block-green: #0ea882;
+  --api-block-blue: #4a6cf7;
+  --api-block-amber: #d4911e;
   --card-bg: rgba(255, 255, 255, 0.78);
   --card-shadow: 0 16px 44px rgba(55, 63, 99, 0.08);
   --feature-text: #5f6878;
@@ -99,6 +104,11 @@
   --code-bg: #0d0e18;
   --code-text: #c5cde8;
   --code-highlight: #5eecc5;
+  --api-block-bg: #141827;
+  --api-block-text: #c5cde8;
+  --api-block-green: #5eecc5;
+  --api-block-blue: #6b8aff;
+  --api-block-amber: #f0b849;
   --card-bg: rgba(30, 32, 48, 0.82);
   --card-shadow: 0 16px 44px rgba(0, 0, 0, 0.3);
   --feature-text: #9ca3af;
@@ -406,20 +416,21 @@
   50% { transform: translateY(-13px) rotate(1.2deg); }
 }
 
-/* ============ Route Board ============ */
+/* ============ Route Board (API Panel) ============ */
 .routeBoard {
   position: relative;
   width: min(100%, 470px);
   align-self: end;
   justify-self: start;
   margin: 0 0 20px 4px;
-  padding: 18px;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow);
   backdrop-filter: blur(16px);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .routeBoard::before {
@@ -430,160 +441,214 @@
   background: linear-gradient(90deg, var(--violet), var(--magenta), var(--coral), var(--amber), var(--mint), var(--cyan));
 }
 
-.boardTop {
-  display: flex;
+/* ---- Tab Bar ---- */
+.apiTabs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
+  padding: 12px 14px 0;
 }
 
-.boardTitle {
-  display: flex;
+.apiTabsLeft {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  font-weight: 800;
+  gap: 28px;
+  min-width: 0;
 }
 
-.boardTitleSvg {
-  width: 18px;
-  height: 18px;
+.apiTab {
+  flex-shrink: 0;
+  padding: 5px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 640;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+
+.apiTab:hover {
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.apiTabActive {
+  padding: 5px 8px;
+  background: color-mix(in srgb, var(--violet) 10%, transparent);
   color: var(--violet);
 }
 
-.status {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: #139a73;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.status::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #20d39b;
-  box-shadow: 0 0 0 5px rgba(32, 211, 155, 0.16);
-}
-
-.codeLine {
+/* ---- Status Badge ---- */
+.apiStatus {
   display: flex;
   align-items: center;
-  min-height: 48px;
-  padding: 0 14px;
-  border-radius: var(--radius);
-  background: var(--code-bg);
-  color: var(--code-text);
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: 12px;
-  overflow: hidden;
+  gap: 7px;
+  padding: 0 4px;
+  flex-shrink: 0;
+  color: #139a73;
+  font-size: 11px;
+  font-weight: 650;
 }
 
-.codeLineSpan {
-  color: var(--code-highlight);
-}
-
-.routeMap {
-  position: relative;
-  min-height: 235px;
-  margin-top: 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background:
-    linear-gradient(var(--grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
-    linear-gradient(125deg, rgba(123, 92, 255, 0.08), rgba(57, 229, 197, 0.07));
-  background-size: 28px 28px, 28px 28px, auto;
-  overflow: hidden;
-}
-
-.routeLine {
-  position: absolute;
-  height: 2px;
-  transform-origin: left center;
-  background: linear-gradient(90deg, rgba(123, 92, 255, 0.08), var(--magenta), var(--mint));
-  opacity: 0.85;
-}
-
-.routeLineOne {
-  width: 260px;
-  left: 76px;
-  top: 105px;
-  transform: rotate(-23deg);
-}
-
-.routeLineTwo {
-  width: 245px;
-  left: 78px;
-  top: 112px;
-  transform: rotate(18deg);
-}
-
-.routeLineThree {
-  width: 220px;
-  left: 78px;
-  top: 119px;
-  transform: rotate(42deg);
-}
-
-.node {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  min-width: 86px;
-  min-height: 44px;
-  padding: 8px 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface-strong);
-  box-shadow: 0 12px 30px rgba(55, 63, 99, 0.11);
-  font-size: 12px;
-  font-weight: 850;
-}
-
-.nodeKey {
-  left: 28px;
-  top: 89px;
-  color: #fff;
-  border: 0;
-  background: linear-gradient(135deg, var(--violet), var(--magenta));
-}
-
-.nodeA { right: 34px; top: 36px; }
-.nodeB { right: 44px; top: 98px; }
-.nodeC { right: 30px; bottom: 36px; }
-
-.nodeSmall {
-  display: block;
-  margin-top: 3px;
-  color: var(--muted);
-  font-weight: 720;
-}
-
-.nodeKey .nodeSmall {
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.pulse {
-  position: absolute;
-  left: 183px;
-  top: 88px;
-  width: 12px;
-  height: 12px;
+.apiStatusDot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--mint);
-  box-shadow: 0 0 0 0 rgba(57, 229, 197, 0.46);
-  animation: pulse 2.2s infinite;
+  box-shadow: 0 0 0 4px rgba(57, 229, 197, 0.16);
 }
 
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(57, 229, 197, 0.46); transform: scale(0.85); }
-  70% { box-shadow: 0 0 0 18px rgba(57, 229, 197, 0); transform: scale(1); }
-  100% { box-shadow: 0 0 0 0 rgba(57, 229, 197, 0); transform: scale(0.85); }
+/* ---- Content Area ---- */
+.apiContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 12px 12px;
+  margin-top: 12px;
+  flex: 1;
+}
+
+/* ---- Endpoint Row ---- */
+.apiEndpoint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  background: var(--api-block-bg);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  transition: background-color 0.3s ease;
+}
+
+.apiMethodBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--api-block-green) 15%, transparent);
+  color: var(--api-block-green);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.apiPath {
+  min-width: 0;
+  color: var(--api-block-text);
+  word-break: break-all;
+  transition: color 0.3s ease;
+}
+
+/* ---- Code Block ---- */
+.apiCodeBlock {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--api-block-bg);
+  transition: background-color 0.3s ease;
+}
+
+.apiCodeLabel {
+  margin-bottom: 10px;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+.apiCodePre {
+  margin: 0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.75;
+  color: var(--api-block-text);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+  transition: color 0.3s ease;
+}
+
+.apiCode {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* ---- Syntax Highlighting ---- */
+.codeGreen {
+  color: var(--api-block-green);
+  transition: color 0.3s ease;
+}
+
+.codeBlue {
+  color: var(--api-block-blue);
+  transition: color 0.3s ease;
+}
+
+.codeAmber {
+  color: var(--api-block-amber);
+  transition: color 0.3s ease;
+}
+
+.codeText {
+  color: var(--api-block-text);
+  transition: color 0.3s ease;
+}
+
+/* ---- Content fade-in ---- */
+@keyframes apiFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.apiFadeIn {
+  animation: apiFadeUp 0.3s ease-out both;
+}
+
+/* ---- Stats Bar ---- */
+.apiStats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--api-block-bg);
+  color: var(--muted);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  transition: background-color 0.3s ease;
+}
+
+.apiStats strong {
+  font-weight: 750;
+  color: var(--api-block-text);
+  transition: color 0.3s ease;
+}
+
+.apiStatDot {
+  color: var(--line);
+  font-weight: 700;
+}
+
+.apiStreamSse {
+  margin-left: auto;
 }
 
 /* ============ Section ============ */
@@ -1105,32 +1170,39 @@
 
   .routeBoard {
     width: 100%;
-    padding: 14px;
+    border-radius: 12px;
   }
 
-  .routeMap {
-    min-height: 212px;
+  .apiTabs {
+    padding: 10px 12px 0;
   }
 
-  .node {
-    min-width: 72px;
+  .apiTabsLeft {
+    gap: 16px;
+  }
+
+  .apiContent {
+    padding: 0 10px 10px;
+    margin-top: 10px;
+    gap: 8px;
+  }
+
+  .apiCodeBlock {
+    padding: 8px 10px;
+  }
+
+  .apiCodePre {
     font-size: 11px;
-    padding: 7px 9px;
+    line-height: 1.6;
   }
 
-  .nodeKey {
-    left: 15px;
+  .apiStats {
+    padding: 8px 12px;
+    font-size: 10px;
   }
 
-  .nodeA { right: 14px; }
-  .nodeB { right: 20px; }
-  .nodeC { right: 14px; }
-
-  .routeLineOne,
-  .routeLineTwo,
-  .routeLineThree {
-    width: 200px;
-    left: 62px;
+  .apiStreamSse {
+    margin-left: auto;
   }
 
   .section {
