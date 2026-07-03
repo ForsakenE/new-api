@@ -21,6 +21,7 @@ import { Route as AboutIndexRouteImport } from './routes/about/index'
 import { Route as OauthProviderRouteImport } from './routes/oauth/$provider'
 import { Route as ConsoleTopupRouteImport } from './routes/console/topup'
 import { Route as ConsoleLogRouteImport } from './routes/console/log'
+import { Route as CustomTokenSaverDocsRouteImport } from './routes/_custom/token-saver-docs'
 import { Route as CustomTermsRouteImport } from './routes/_custom/terms'
 import { Route as CustomPrivacyRouteImport } from './routes/_custom/privacy'
 import { Route as AuthenticatedChat2linkRouteImport } from './routes/_authenticated/chat2link'
@@ -128,6 +129,11 @@ const ConsoleTopupRoute = ConsoleTopupRouteImport.update({
 const ConsoleLogRoute = ConsoleLogRouteImport.update({
   id: '/console/log',
   path: '/console/log',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomTokenSaverDocsRoute = CustomTokenSaverDocsRouteImport.update({
+  id: '/_custom/token-saver-docs',
+  path: '/token-saver-docs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CustomTermsRoute = CustomTermsRouteImport.update({
@@ -431,6 +437,7 @@ export interface FileRoutesByFullPath {
   '/chat2link': typeof AuthenticatedChat2linkRoute
   '/privacy': typeof CustomPrivacyRoute
   '/terms': typeof CustomTermsRoute
+  '/token-saver-docs': typeof CustomTokenSaverDocsRoute
   '/console/log': typeof ConsoleLogRoute
   '/console/topup': typeof ConsoleTopupRoute
   '/oauth/$provider': typeof OauthProviderRoute
@@ -492,6 +499,7 @@ export interface FileRoutesByTo {
   '/chat2link': typeof AuthenticatedChat2linkRoute
   '/privacy': typeof CustomPrivacyRoute
   '/terms': typeof CustomTermsRoute
+  '/token-saver-docs': typeof CustomTokenSaverDocsRoute
   '/console/log': typeof ConsoleLogRoute
   '/console/topup': typeof ConsoleTopupRoute
   '/oauth/$provider': typeof OauthProviderRoute
@@ -557,6 +565,7 @@ export interface FileRoutesById {
   '/_authenticated/chat2link': typeof AuthenticatedChat2linkRoute
   '/_custom/privacy': typeof CustomPrivacyRoute
   '/_custom/terms': typeof CustomTermsRoute
+  '/_custom/token-saver-docs': typeof CustomTokenSaverDocsRoute
   '/console/log': typeof ConsoleLogRoute
   '/console/topup': typeof ConsoleTopupRoute
   '/oauth/$provider': typeof OauthProviderRoute
@@ -621,6 +630,7 @@ export interface FileRouteTypes {
     | '/chat2link'
     | '/privacy'
     | '/terms'
+    | '/token-saver-docs'
     | '/console/log'
     | '/console/topup'
     | '/oauth/$provider'
@@ -682,6 +692,7 @@ export interface FileRouteTypes {
     | '/chat2link'
     | '/privacy'
     | '/terms'
+    | '/token-saver-docs'
     | '/console/log'
     | '/console/topup'
     | '/oauth/$provider'
@@ -746,6 +757,7 @@ export interface FileRouteTypes {
     | '/_authenticated/chat2link'
     | '/_custom/privacy'
     | '/_custom/terms'
+    | '/_custom/token-saver-docs'
     | '/console/log'
     | '/console/topup'
     | '/oauth/$provider'
@@ -802,6 +814,7 @@ export interface RootRouteChildren {
   errors503Route: typeof errors503Route
   CustomPrivacyRoute: typeof CustomPrivacyRoute
   CustomTermsRoute: typeof CustomTermsRoute
+  CustomTokenSaverDocsRoute: typeof CustomTokenSaverDocsRoute
   ConsoleLogRoute: typeof ConsoleLogRoute
   ConsoleTopupRoute: typeof ConsoleTopupRoute
   OauthProviderRoute: typeof OauthProviderRoute
@@ -896,6 +909,13 @@ declare module '@tanstack/react-router' {
       path: '/console/log'
       fullPath: '/console/log'
       preLoaderRoute: typeof ConsoleLogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_custom/token-saver-docs': {
+      id: '/_custom/token-saver-docs'
+      path: '/token-saver-docs'
+      fullPath: '/token-saver-docs'
+      preLoaderRoute: typeof CustomTokenSaverDocsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_custom/terms': {
@@ -1396,6 +1416,7 @@ const rootRouteChildren: RootRouteChildren = {
   errors503Route: errors503Route,
   CustomPrivacyRoute: CustomPrivacyRoute,
   CustomTermsRoute: CustomTermsRoute,
+  CustomTokenSaverDocsRoute: CustomTokenSaverDocsRoute,
   ConsoleLogRoute: ConsoleLogRoute,
   ConsoleTopupRoute: ConsoleTopupRoute,
   OauthProviderRoute: OauthProviderRoute,
