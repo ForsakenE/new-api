@@ -16,10 +16,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 // import { Home } from '@/features/home'
-import CustomHomepage from '@/features/custom-page/components/IndexPage'
+import CustomHomepage from "@/features/custom-page/components/IndexPage";
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   component: CustomHomepage,
-})
+});
