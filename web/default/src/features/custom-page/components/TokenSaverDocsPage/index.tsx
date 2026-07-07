@@ -10,6 +10,7 @@ import keysImage from "./assets/tokensaver-keys-screen.png";
 import overviewImage from "./assets/tokensaver-overview-screen.png";
 import logsImage from "./assets/tokensaver-usage-logs-screen.png";
 import i18nResources, { i18nKeys, type I18nKey } from "./i18n";
+import { resolveResourceLang } from "@/features/custom-page/lang";
 import styles from "./index.module.css";
 
 // ===== 常量 =====
@@ -17,7 +18,6 @@ import styles from "./index.module.css";
 const TOKENSAVER_ROOT = "https://www.tokensaver.net";
 const TOKENSAVER_V1 = "https://www.tokensaver.net/v1";
 
-type Lang = "zh" | "en" | "fr" | "ru" | "ja" | "vi";
 
 interface TokenSaverDocsPageProps {
   className?: string;
@@ -35,7 +35,7 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
   const { resolvedTheme } = useTheme();
   const { i18n } = useTranslation();
 
-  const lang = i18n.language as Lang;
+  const lang = resolveResourceLang(i18n.language);
 
   const t = (key: I18nKey): string => {
     return i18nResources[key]?.[lang] ?? i18nResources[key]?.[lang?.split('-')?.[0]] ?? "";

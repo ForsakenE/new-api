@@ -5,8 +5,7 @@ import i18nResources, { i18nKeys } from "./i18n";
 import styles from "./index.module.css";
 import type {I18nKey} from './i18n';
 import { PublicLayout } from '@/components/layout'
-
-type Lang = "zh" | "en" | "fr" | "ru" | "ja" | "vi";
+import { resolveResourceLang } from "@/features/custom-page/lang";
 
 interface UserTermsPageProps {
   className?: string;
@@ -17,7 +16,7 @@ const UserTermsPage: React.FC<UserTermsPageProps> = ({ className, style }) => {
   const { resolvedTheme } = useTheme();
   const { i18n } = useTranslation();
 
-  const lang = (i18n.language as Lang) 
+  const lang = resolveResourceLang(i18n.language) 
 
   const t = (key: I18nKey): string => {
 
