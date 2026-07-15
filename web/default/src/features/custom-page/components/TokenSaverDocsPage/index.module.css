@@ -1,4 +1,6 @@
 .token-saver-docs-page {
+  /* 与顶栏预留高度、侧栏 sticky top、锚点 scroll-margin 保持同一值 */
+  --docs-sticky-offset: 72px;
   min-height: 100vh;
   color: var(--text);
   background: var(--bg);
@@ -6,7 +8,7 @@
     -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   line-height: 1.72;
-  padding-top: 72px;
+  padding-top: var(--docs-sticky-offset);
 }
 
 .light {
@@ -133,9 +135,9 @@
 
 .sidebar {
   position: sticky;
-  top: 72px;
+  top: var(--docs-sticky-offset);
   align-self: start;
-  max-height: calc(100vh - 112px);
+  max-height: calc(100vh - var(--docs-sticky-offset) - 24px);
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -177,7 +179,8 @@
   border-radius: 8px;
   background: var(--surface);
   overflow: hidden;
-  scroll-margin-top: 82px;
+  /* 与侧栏 sticky top 一致，锚点跳转时区块顶与侧栏顶对齐 */
+  scroll-margin-top: var(--docs-sticky-offset);
 }
 
 .sectionBody {
@@ -365,6 +368,41 @@
   margin-top: 8px;
   color: var(--subtle);
   font-size: 13px;
+}
+
+.inlineAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  margin-left: 8px;
+  margin-right: 4px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--brand) 34%, transparent);
+  border-radius: 7px;
+  color: #ffffff;
+  background: var(--brand);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+.inlineAction:hover {
+  filter: brightness(0.92);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.light .inlineAction,
+.light .inlineAction:hover {
+  color: #ffffff;
+}
+
+.dark .inlineAction,
+.dark .inlineAction:hover {
+  color: #f4f5f7;
 }
 
 .footer {

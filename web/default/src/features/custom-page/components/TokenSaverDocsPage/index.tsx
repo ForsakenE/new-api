@@ -3,21 +3,18 @@ import { useTranslation } from "react-i18next";
 
 import { PublicLayout } from "@/components/layout";
 import { useTheme } from "@/context/theme-provider";
+import { resolveResourceLang } from "@/features/custom-page/lang";
 
-import claudeLatestImage from "./assets/cc-switch-claude-latest-compact.png";
-import codexImage from "./assets/cc-switch-codex-compact.png";
-import keysImage from "./assets/tokensaver-keys-screen.png";
+import ccSwitchImportImage from "./assets/tokensaver-cc-switch-import.png";
 import overviewImage from "./assets/tokensaver-overview-screen.png";
 import logsImage from "./assets/tokensaver-usage-logs-screen.png";
 import i18nResources, { i18nKeys, type I18nKey } from "./i18n";
-import { resolveResourceLang } from "@/features/custom-page/lang";
 import styles from "./index.module.css";
-
-// ===== 常量 =====
 
 const TOKENSAVER_ROOT = "https://www.tokensaver.net";
 const TOKENSAVER_V1 = "https://www.tokensaver.net/v1";
-
+const TOKENSAVER_KEYS = "https://www.tokensaver.net/keys";
+const TOKENSAVER_PRICING = "https://www.tokensaver.net/pricing";
 
 interface TokenSaverDocsPageProps {
   className?: string;
@@ -26,6 +23,23 @@ interface TokenSaverDocsPageProps {
 
 const Code = ({ children }: { children: React.ReactNode }) => (
   <code className={styles.inlineCode}>{children}</code>
+);
+
+const InlineAction = ({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) => (
+  <a
+    className={styles.inlineAction}
+    href={href}
+    target="_blank"
+    rel="noreferrer"
+  >
+    {children}
+  </a>
 );
 
 const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
@@ -38,7 +52,11 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
   const lang = resolveResourceLang(i18n.language);
 
   const t = (key: I18nKey): string => {
-    return i18nResources[key]?.[lang] ?? i18nResources[key]?.[lang?.split('-')?.[0]] ?? "";
+    return (
+      i18nResources[key]?.[lang] ??
+      i18nResources[key]?.[lang?.split("-")?.[0]] ??
+      ""
+    );
   };
   const themeClass = resolvedTheme === "dark" ? styles.dark : styles.light;
   const containerClassName = [
@@ -52,16 +70,12 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
   const sidebarItems = [
     { href: "#overview", label: t(i18nKeys.overviewTitle) },
     { href: "#quick-start", label: t(i18nKeys.quickStartTitle) },
-    { href: "#auth", label: t(i18nKeys.authTitle) },
     { href: "#models", label: t(i18nKeys.modelsTitle) },
-    { href: "#multimodal", label: t(i18nKeys.multimodalTitle) },
+    { href: "#cc-switch", label: t(i18nKeys.ccSwitchTitle) },
     { href: "#sdk", label: t(i18nKeys.sdkTitle) },
     { href: "#api-reference", label: t(i18nKeys.apiReferenceTitle) },
-    { href: "#tasks", label: t(i18nKeys.tasksTitle) },
     { href: "#console", label: t(i18nKeys.consoleTitle) },
-    { href: "#logs", label: t(i18nKeys.logsTitle) },
-    { href: "#errors", label: t(i18nKeys.errorsTitle) },
-    { href: "#support", label: t(i18nKeys.supportTitle) },
+    { href: "#troubleshooting", label: t(i18nKeys.troubleshootingTitle) },
     { href: "#policy", label: t(i18nKeys.policyTitle) },
   ];
 
@@ -86,7 +100,10 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
             <div className={styles.sectionBody}>
               <h1 className={styles.heading1}>{t(i18nKeys.overviewTitle)}</h1>
               <p className={styles.sectionLede}>{t(i18nKeys.overviewLead)}</p>
-              <h3 className={styles.heading3}>{t(i18nKeys.overviewUseCasesTitle)}</h3>
+
+              <h3 className={styles.heading3}>
+                {t(i18nKeys.overviewUseCasesTitle)}
+              </h3>
               <ul className={styles.steps}>
                 <li>{t(i18nKeys.overviewUseCase1)}</li>
                 <li>{t(i18nKeys.overviewUseCase2)}</li>
@@ -97,7 +114,52 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
                   {t(i18nKeys.overviewUseCase4After)}
                 </li>
               </ul>
-              <h3 className={styles.heading3}>{t(i18nKeys.overviewFirstCallTitle)}</h3>
+
+              <h3 className={styles.heading3}>
+                {t(i18nKeys.overviewSceneTitle)}
+              </h3>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>{t(i18nKeys.overviewSceneHeaderScene)}</th>
+                      <th>{t(i18nKeys.overviewSceneHeaderMethod)}</th>
+                      <th>{t(i18nKeys.overviewSceneHeaderModel)}</th>
+                      <th>{t(i18nKeys.overviewSceneHeaderDesc)}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{t(i18nKeys.overviewSceneChat)}</td>
+                      <td>
+                        <Code>POST /v1/chat/completions</Code>
+                      </td>
+                      <td>{t(i18nKeys.overviewSceneChatModel)}</td>
+                      <td>{t(i18nKeys.overviewSceneChatDesc)}</td>
+                    </tr>
+                    <tr>
+                      <td>{t(i18nKeys.overviewSceneResponses)}</td>
+                      <td>
+                        <Code>POST /v1/responses</Code>
+                      </td>
+                      <td>{t(i18nKeys.overviewSceneResponsesModel)}</td>
+                      <td>{t(i18nKeys.overviewSceneResponsesDesc)}</td>
+                    </tr>
+                    <tr>
+                      <td>{t(i18nKeys.overviewSceneClaude)}</td>
+                      <td>
+                        <Code>POST /v1/messages</Code>
+                      </td>
+                      <td>{t(i18nKeys.overviewSceneClaudeModel)}</td>
+                      <td>{t(i18nKeys.overviewSceneClaudeDesc)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3 className={styles.heading3}>
+                {t(i18nKeys.overviewFirstCallTitle)}
+              </h3>
               <pre className={styles.pre}>
                 <code
                   className={styles.preCode}
@@ -105,12 +167,48 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -d '{
-    "model": "gpt-5.4",
+    "model": "gpt-5.5",
     "messages": [
       {"role": "user", "content": "你好，用一句话介绍 TokenSaver"}
     ]
   }'`}</code>
               </pre>
+
+              <h3 className={styles.heading3}>
+                {t(i18nKeys.overviewCapabilityTitle)}
+              </h3>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>{t(i18nKeys.overviewCapabilityHeaderName)}</th>
+                      <th>{t(i18nKeys.overviewCapabilityHeaderEntry)}</th>
+                      <th>{t(i18nKeys.overviewCapabilityHeaderDesc)}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{t(i18nKeys.overviewCapabilityChat)}</td>
+                      <td>
+                        <Code>/v1/chat/completions</Code>
+                        {", "}
+                        <Code>/v1/responses</Code>
+                      </td>
+                      <td>{t(i18nKeys.overviewCapabilityChatDesc)}</td>
+                    </tr>
+                    <tr>
+                      <td>{t(i18nKeys.overviewCapabilityTools)}</td>
+                      <td>
+                        <Code>/v1/responses</Code>
+                        {", "}
+                        <Code>/v1/chat/completions</Code>
+                      </td>
+                      <td>{t(i18nKeys.overviewCapabilityToolsDesc)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
               <div className={styles.note}>
                 {t(i18nKeys.overviewFirstCallNote)}
               </div>
@@ -125,11 +223,7 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
               <ol className={styles.steps}>
                 <li>
                   {t(i18nKeys.quickStartStep1Before)}
-                  <a
-                    href={TOKENSAVER_ROOT}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
+                  <a href={TOKENSAVER_ROOT} target="_blank" rel="noreferrer">
                     <Code>www.tokensaver.net</Code>
                   </a>
                   {t(i18nKeys.quickStartStep1After)}
@@ -140,6 +234,9 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
                   {t(i18nKeys.quickStartStep2Middle)}
                   <Code>{t(i18nKeys.apiKeysMenu)}</Code>
                   {t(i18nKeys.quickStartStep2After)}
+                  <InlineAction href={TOKENSAVER_KEYS}>
+                    {t(i18nKeys.createApiKeyCta)}
+                  </InlineAction>
                 </li>
                 <li>
                   {t(i18nKeys.quickStartStep3Before)}
@@ -180,52 +277,6 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
                     {t(i18nKeys.quickStartCardClaudeAfter)}
                   </p>
                 </div>
-                <div className={styles.card}>
-                  <strong className={styles.cardTitle}>
-                    {t(i18nKeys.quickStartCardCheckTitle)}
-                  </strong>
-                  <p className={styles.paragraph}>
-                    {t(i18nKeys.quickStartCardCheckBody)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ===== 认证与密钥 ===== */}
-          <section className={styles.section} id="auth">
-            <div className={styles.sectionBody}>
-              <h2 className={styles.heading2}>{t(i18nKeys.authTitle)}</h2>
-              <p className={styles.sectionLede}>{t(i18nKeys.authLead)}</p>
-              <ol className={styles.steps}>
-                <li>
-                  {t(i18nKeys.authStep1Before)}
-                  <Code>{t(i18nKeys.consoleMenu)}</Code> &rarr;{" "}
-                  <Code>{t(i18nKeys.apiKeysMenu)}</Code>
-                  {t(i18nKeys.authStep1After)}
-                </li>
-                <li>
-                  {t(i18nKeys.authStep2Before)}
-                  <Code>{t(i18nKeys.createApiKeyMenu)}</Code>
-                  {t(i18nKeys.authStep2After)}
-                </li>
-                <li>
-                  {t(i18nKeys.authStep3Before)}
-                  <Code>cc-switch-codex</Code>、<Code>backend-prod</Code>{" "}
-                  或 <Code>trae-local</Code>
-                  {t(i18nKeys.authStep3After)}
-                </li>
-                <li>{t(i18nKeys.authStep4)}</li>
-                <li>{t(i18nKeys.authStep5)}</li>
-              </ol>
-              <img
-                className={styles.shot}
-                src={keysImage}
-                alt={t(i18nKeys.keysAlt)}
-              />
-              <p className={styles.caption}>{t(i18nKeys.keysCaption)}</p>
-              <div className={[styles.note, styles.danger].join(" ")}>
-                {t(i18nKeys.authDanger)}
               </div>
             </div>
           </section>
@@ -237,21 +288,21 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
               <p className={styles.sectionLede}>
                 {t(i18nKeys.modelsLeadBefore)}
                 <Code>model</Code>
+                {t(i18nKeys.modelsLeadMiddle)}
+                <InlineAction href={TOKENSAVER_PRICING}>
+                  {t(i18nKeys.modelSquareCta)}
+                </InlineAction>
                 {t(i18nKeys.modelsLeadAfter)}
               </p>
               <div className={styles.grid}>
                 <div className={styles.card}>
                   <strong className={styles.cardTitle}>
-                    {t(i18nKeys.modelsCardTextTitle)}
+                    {t(i18nKeys.modelsCardChatTitle)}
                   </strong>
                   <p className={styles.paragraph}>
-                    {t(i18nKeys.modelsCardTextBefore)}
-                    <Code>/v1/chat/completions</Code>
-                    {t(i18nKeys.modelsCardTextAfter)}
+                    {t(i18nKeys.modelsCardChatBody)}
                   </p>
-                  <span className={styles.tag}>gpt-5.4</span>
-                  <span className={styles.tag}>gpt-5</span>
-                  <span className={styles.tag}>claude-sonnet-4-5-20250929</span>
+                  <span className={styles.tag}>/v1/chat/completions</span>
                 </div>
                 <div className={styles.card}>
                   <strong className={styles.cardTitle}>
@@ -261,31 +312,57 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
                     {t(i18nKeys.modelsCardResponsesBody)}
                   </p>
                   <span className={styles.tag}>/v1/responses</span>
+                  <span className={styles.tag}>/v1/responses/compact</span>
                 </div>
                 <div className={styles.card}>
                   <strong className={styles.cardTitle}>
                     {t(i18nKeys.modelsCardClaudeTitle)}
                   </strong>
                   <p className={styles.paragraph}>
-                    {t(i18nKeys.modelsCardClaudeBefore)}
-                    <Code>/v1/messages</Code>
-                    {t(i18nKeys.modelsCardClaudeAfter)}
+                    {t(i18nKeys.modelsCardClaudeBody)}
                   </p>
-                  <span className={styles.tag}>Claude Messages</span>
+                  <span className={styles.tag}>/v1/messages</span>
                   <span className={styles.tag}>anthropic-version</span>
                 </div>
+              </div>
+              <div className={styles.note}>
+                {t(i18nKeys.modelsExampleNoteBefore)}{" "}
+                <Code>deepseek-v4-pro</Code> <Code>gpt-5.5</Code>{" "}
+                <Code>claude-opus-4-8</Code>
               </div>
             </div>
           </section>
 
-          {/* ===== 多模态 ===== */}
-          <section className={styles.section} id="multimodal">
+          {/* ===== CC Switch ===== */}
+          <section className={styles.section} id="cc-switch">
             <div className={styles.sectionBody}>
-              <h2 className={styles.heading2}>{t(i18nKeys.multimodalTitle)}</h2>
-              <p className={styles.sectionLede}>{t(i18nKeys.multimodalLead)}</p>
-              <div className={[styles.note, styles.warning].join(" ")}>
-                {t(i18nKeys.multimodalWarning)}
-              </div>
+              <h2 className={styles.heading2}>{t(i18nKeys.ccSwitchTitle)}</h2>
+              <p className={styles.sectionLede}>{t(i18nKeys.ccSwitchLead)}</p>
+              <ol className={styles.steps}>
+                <li>
+                  {t(i18nKeys.ccSwitchStep1Before)}
+                  <InlineAction href={TOKENSAVER_KEYS}>
+                    {t(i18nKeys.apiKeysCta)}
+                  </InlineAction>
+                  {t(i18nKeys.ccSwitchStep1After)}
+                </li>
+                <li>
+                  {t(i18nKeys.ccSwitchStep2Before)}
+                  <Code>CC Switch</Code>
+                  {t(i18nKeys.ccSwitchStep2After)}
+                </li>
+                <li>{t(i18nKeys.ccSwitchStep3)}</li>
+              </ol>
+              <img
+                className={styles.shot}
+                src={ccSwitchImportImage}
+                alt={t(i18nKeys.ccSwitchAlt)}
+              />
+              <p className={styles.caption}>
+                {t(i18nKeys.ccSwitchCaptionBefore)}
+                <Code>CC Switch</Code>
+                {t(i18nKeys.ccSwitchCaptionAfter)}
+              </p>
             </div>
           </section>
 
@@ -293,6 +370,15 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
           <section className={styles.section} id="sdk">
             <div className={styles.sectionBody}>
               <h2 className={styles.heading2}>{t(i18nKeys.sdkTitle)}</h2>
+              <p className={styles.sectionLede}>
+                {t(i18nKeys.sdkLeadBefore)}
+                <Code>model</Code>
+                {t(i18nKeys.sdkLeadAfter)}{" "}
+                <InlineAction href={TOKENSAVER_PRICING}>
+                  {t(i18nKeys.modelSquareCta)}
+                </InlineAction>
+              </p>
+
               <h3 className={styles.heading3}>{t(i18nKeys.sdkPythonTitle)}</h3>
               <pre className={styles.pre}>
                 <code className={styles.preCode}>{`from openai import OpenAI
@@ -303,13 +389,73 @@ client = OpenAI(
 )
 
 completion = client.chat.completions.create(
-    model="gpt-5.4",
+    model="gpt-5.5",
     messages=[{"role": "user", "content": "你好"}],
 )
 
 print(completion.choices[0].message.content)`}</code>
               </pre>
-              <h3 className={styles.heading3}>{t(i18nKeys.sdkClaudeCurlTitle)}</h3>
+
+              <h3 className={styles.heading3}>
+                {t(i18nKeys.sdkResponseTitle)}
+              </h3>
+              <pre className={styles.pre}>
+                <code className={styles.preCode}>{`{
+  "id": "chatcmpl_example",
+  "object": "chat.completion",
+  "model": "gpt-5.5",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "你好，我是通过 TokenSaver 调用的模型。"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 12,
+    "completion_tokens": 18,
+    "total_tokens": 30
+  }
+}`}</code>
+              </pre>
+
+              <h3 className={styles.heading3}>{t(i18nKeys.sdkStreamTitle)}</h3>
+              <pre className={styles.pre}>
+                <code className={styles.preCode}>{`stream = client.chat.completions.create(
+    model="gpt-5.5",
+    messages=[{"role": "user", "content": "用一句话介绍 TokenSaver"}],
+    stream=True,
+)
+
+for chunk in stream:
+    delta = chunk.choices[0].delta.content
+    if delta:
+        print(delta, end="")`}</code>
+              </pre>
+
+              <h3 className={styles.heading3}>{t(i18nKeys.sdkNodeTitle)}</h3>
+              <pre className={styles.pre}>
+                <code className={styles.preCode}>{`import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "YOUR_API_KEY",
+  baseURL: "${TOKENSAVER_V1}",
+});
+
+const completion = await client.chat.completions.create({
+  model: "gpt-5.5",
+  messages: [{ role: "user", content: "你好" }],
+});
+
+console.log(completion.choices[0].message.content);`}</code>
+              </pre>
+
+              <h3 className={styles.heading3}>
+                {t(i18nKeys.sdkClaudeCurlTitle)}
+              </h3>
               <pre className={styles.pre}>
                 <code
                   className={styles.preCode}
@@ -318,45 +464,13 @@ print(completion.choices[0].message.content)`}</code>
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "anthropic-version: 2023-06-01" \\
   -d '{
-    "model": "claude-sonnet-4-5-20250929",
+    "model": "claude-opus-4-8",
     "max_tokens": 1024,
     "messages": [
       {"role": "user", "content": "你好"}
     ]
   }'`}</code>
               </pre>
-              <h3 className={styles.heading3}>{t(i18nKeys.sdkCcSwitchTitle)}</h3>
-              <ol className={styles.steps}>
-                <li>
-                  {t(i18nKeys.sdkCcSwitchStep1Before)}
-                  <Code>Open AI</Code>
-                  {t(i18nKeys.sdkCcSwitchStep1Middle)}
-                  <Code>{TOKENSAVER_V1}</Code>
-                  {t(i18nKeys.sdkCcSwitchStep1After)}
-                </li>
-                <li>
-                  {t(i18nKeys.sdkCcSwitchStep2Before)}
-                  <Code>Claude Official</Code>
-                  {t(i18nKeys.sdkCcSwitchStep2Middle)}
-                  <Code>{TOKENSAVER_ROOT}</Code>
-                  {t(i18nKeys.sdkCcSwitchStep2After)}
-                </li>
-                <li>{t(i18nKeys.sdkCcSwitchStep3)}</li>
-              </ol>
-              <img
-                className={styles.shot}
-                src={codexImage}
-                alt={t(i18nKeys.codexAlt)}
-              />
-              <p className={styles.caption}>{t(i18nKeys.codexCaption)}</p>
-              <img
-                className={styles.shot}
-                src={claudeLatestImage}
-                alt={t(i18nKeys.claudeLatestAlt)}
-              />
-              <p className={styles.caption}>
-                {t(i18nKeys.claudeLatestCaption)}
-              </p>
             </div>
           </section>
 
@@ -366,90 +480,112 @@ print(completion.choices[0].message.content)`}</code>
               <h2 className={styles.heading2}>
                 {t(i18nKeys.apiReferenceTitle)}
               </h2>
-              <p className={styles.sectionLede}>
-                {t(i18nKeys.apiRefLeadBefore)}
-                <Code>{TOKENSAVER_V1}</Code>
-                {t(i18nKeys.apiRefLeadAfter)}
-              </p>
+              <p className={styles.sectionLede}>{t(i18nKeys.apiRefLead)}</p>
+
+              <h3 className={styles.heading3}>
+                {t(i18nKeys.apiEndpointTitle)}
+              </h3>
               <div className={styles.tableWrap}>
                 <table className={styles.table}>
                   <thead>
                     <tr>
-                      <th>{t(i18nKeys.apiTableHeaderTarget)}</th>
-                      <th>{t(i18nKeys.apiTableHeaderMethod)}</th>
-                      <th>{t(i18nKeys.apiTableHeaderBaseUrl)}</th>
-                      <th>{t(i18nKeys.apiTableHeaderDesc)}</th>
+                      <th>{t(i18nKeys.apiEndpointHeaderMethod)}</th>
+                      <th>{t(i18nKeys.apiEndpointHeaderPath)}</th>
+                      <th>{t(i18nKeys.apiEndpointHeaderUse)}</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>{t(i18nKeys.apiRowListModels)}</td>
                       <td>
-                        <Code>GET /v1/models</Code>
+                        <Code>GET</Code>
                       </td>
                       <td>
-                        <Code>{TOKENSAVER_ROOT}</Code>
+                        <Code>/v1/models</Code>
                       </td>
-                      <td>{t(i18nKeys.apiRowListModelsDesc)}</td>
+                      <td>{t(i18nKeys.apiEndpointModelsDesc)}</td>
                     </tr>
                     <tr>
-                      <td>{t(i18nKeys.apiRowChat)}</td>
                       <td>
-                        <Code>POST /v1/chat/completions</Code>
+                        <Code>POST</Code>
                       </td>
                       <td>
-                        <Code>{TOKENSAVER_ROOT}</Code>
+                        <Code>/v1/chat/completions</Code>
                       </td>
-                      <td>{t(i18nKeys.apiRowChatDesc)}</td>
+                      <td>{t(i18nKeys.apiEndpointChatDesc)}</td>
                     </tr>
                     <tr>
-                      <td>Responses</td>
                       <td>
-                        <Code>POST /v1/responses</Code>
+                        <Code>POST</Code>
                       </td>
                       <td>
-                        <Code>{TOKENSAVER_ROOT}</Code>
+                        <Code>/v1/completions</Code>
                       </td>
-                      <td>{t(i18nKeys.apiRowResponsesDesc)}</td>
+                      <td>{t(i18nKeys.apiEndpointCompletionsDesc)}</td>
                     </tr>
                     <tr>
-                      <td>Claude Messages</td>
                       <td>
-                        <Code>POST /v1/messages</Code>
+                        <Code>POST</Code>
                       </td>
                       <td>
-                        <Code>{TOKENSAVER_ROOT}</Code>
+                        <Code>/v1/responses</Code>
                       </td>
-                      <td>{t(i18nKeys.apiRowClaudeDesc)}</td>
+                      <td>{t(i18nKeys.apiEndpointResponsesDesc)}</td>
                     </tr>
                     <tr>
-                      <td>{t(i18nKeys.apiRowGemini)}</td>
                       <td>
-                        <Code>POST /v1beta/models/*</Code>
+                        <Code>POST</Code>
                       </td>
                       <td>
-                        <Code>{TOKENSAVER_ROOT}</Code>
+                        <Code>/v1/responses/compact</Code>
                       </td>
-                      <td>{t(i18nKeys.apiRowGeminiDesc)}</td>
+                      <td>{t(i18nKeys.apiEndpointResponsesCompactDesc)}</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <Code>POST</Code>
+                      </td>
+                      <td>
+                        <Code>/v1/messages</Code>
+                      </td>
+                      <td>{t(i18nKeys.apiEndpointMessagesDesc)}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
+
+              <h3 className={styles.heading3}>{t(i18nKeys.apiBaseUrlTitle)}</h3>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>{t(i18nKeys.apiBaseUrlHeaderClient)}</th>
+                      <th>{t(i18nKeys.apiBaseUrlHeaderValue)}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{t(i18nKeys.apiBaseUrlOpenAiClient)}</td>
+                      <td>
+                        <Code>{TOKENSAVER_V1}</Code>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>{t(i18nKeys.apiBaseUrlClaudeClient)}</td>
+                      <td>
+                        <Code>{TOKENSAVER_ROOT}</Code>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
               <div className={[styles.note, styles.warning].join(" ")}>
                 {t(i18nKeys.apiRefNoteBefore)}
-                <Code>{TOKENSAVER_ROOT}</Code>
+                <Code>/chat/completions</Code>
                 {t(i18nKeys.apiRefNoteMiddle)}
-                <Code>{TOKENSAVER_V1}</Code>
+                <Code>/v1</Code>
                 {t(i18nKeys.apiRefNoteAfter)}
               </div>
-            </div>
-          </section>
-
-          {/* ===== 任务与异步能力 ===== */}
-          <section className={styles.section} id="tasks">
-            <div className={styles.sectionBody}>
-              <h2 className={styles.heading2}>{t(i18nKeys.tasksTitle)}</h2>
-              <p className={styles.sectionLede}>{t(i18nKeys.tasksLead)}</p>
             </div>
           </section>
 
@@ -464,36 +600,145 @@ print(completion.choices[0].message.content)`}</code>
                 alt={t(i18nKeys.overviewAlt)}
               />
               <p className={styles.caption}>{t(i18nKeys.overviewCaption)}</p>
+              <div className={styles.grid}>
+                <div className={styles.card}>
+                  <strong className={styles.cardTitle}>
+                    {t(i18nKeys.consoleCardOverviewTitle)}
+                  </strong>
+                  <p className={styles.paragraph}>
+                    {t(i18nKeys.consoleCardOverviewBody)}
+                  </p>
+                </div>
+                <div className={styles.card}>
+                  <strong className={styles.cardTitle}>
+                    {t(i18nKeys.consoleCardDashboardTitle)}
+                  </strong>
+                  <p className={styles.paragraph}>
+                    {t(i18nKeys.consoleCardDashboardBody)}
+                  </p>
+                </div>
+                <div className={styles.card}>
+                  <strong className={styles.cardTitle}>
+                    {t(i18nKeys.consoleCardKeysTitle)}
+                  </strong>
+                  <p className={styles.paragraph}>
+                    {t(i18nKeys.consoleCardKeysBody)}
+                  </p>
+                </div>
+                <div className={styles.card}>
+                  <strong className={styles.cardTitle}>
+                    {t(i18nKeys.consoleCardWalletTitle)}
+                  </strong>
+                  <p className={styles.paragraph}>
+                    {t(i18nKeys.consoleCardWalletBody)}
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
-          {/* ===== 使用日志 ===== */}
-          <section className={styles.section} id="logs">
+          {/* ===== 故障排查 ===== */}
+          <section className={styles.section} id="troubleshooting">
             <div className={styles.sectionBody}>
-              <h2 className={styles.heading2}>{t(i18nKeys.logsTitle)}</h2>
-              <p className={styles.sectionLede}>{t(i18nKeys.logsLead)}</p>
+              <h2 className={styles.heading2}>
+                {t(i18nKeys.troubleshootingTitle)}
+              </h2>
+              <p className={styles.sectionLede}>
+                {t(i18nKeys.troubleshootingLead)}
+              </p>
               <img
                 className={styles.shot}
                 src={logsImage}
                 alt={t(i18nKeys.logsAlt)}
               />
-              <p className={styles.caption}>{t(i18nKeys.logsCaption)}</p>
-            </div>
-          </section>
 
-          {/* ===== 错误码 ===== */}
-          <section className={styles.section} id="errors">
-            <div className={styles.sectionBody}>
-              <h2 className={styles.heading2}>{t(i18nKeys.errorsTitle)}</h2>
-              <div className={styles.note}>{t(i18nKeys.errorsNote)}</div>
-            </div>
-          </section>
+              <h3 className={styles.heading3}>{t(i18nKeys.faqTitle)}</h3>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>{t(i18nKeys.faqHeaderIssue)}</th>
+                      <th>{t(i18nKeys.faqHeaderCause)}</th>
+                      <th>{t(i18nKeys.faqHeaderAction)}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{t(i18nKeys.faqNoLogIssue)}</td>
+                      <td>{t(i18nKeys.faqNoLogCause)}</td>
+                      <td>
+                        {t(i18nKeys.faqNoLogActionBefore)}
+                        <Code>/v1</Code>
+                        {t(i18nKeys.faqNoLogActionMiddle)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>{t(i18nKeys.faq401Issue)}</td>
+                      <td>{t(i18nKeys.faq401Cause)}</td>
+                      <td>
+                        {t(i18nKeys.faq401ActionBefore)}
+                        <Code>Authorization: Bearer YOUR_API_KEY</Code>
+                        {t(i18nKeys.faq401ActionAfter)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>{t(i18nKeys.faq403Issue)}</td>
+                      <td>{t(i18nKeys.faq403Cause)}</td>
+                      <td>{t(i18nKeys.faq403Action)}</td>
+                    </tr>
+                    <tr>
+                      <td>{t(i18nKeys.faqModelIssue)}</td>
+                      <td>{t(i18nKeys.faqModelCause)}</td>
+                      <td>{t(i18nKeys.faqModelAction)}</td>
+                    </tr>
+                    <tr>
+                      <td>{t(i18nKeys.faq429Issue)}</td>
+                      <td>{t(i18nKeys.faq429Cause)}</td>
+                      <td>{t(i18nKeys.faq429Action)}</td>
+                    </tr>
+                    <tr>
+                      <td>{t(i18nKeys.faq5xxIssue)}</td>
+                      <td>{t(i18nKeys.faq5xxCause)}</td>
+                      <td>{t(i18nKeys.faq5xxAction)}</td>
+                    </tr>
+                    <tr>
+                      <td>{t(i18nKeys.faqQuotaIssue)}</td>
+                      <td>{t(i18nKeys.faqQuotaCause)}</td>
+                      <td>{t(i18nKeys.faqQuotaAction)}</td>
+                    </tr>
+                    <tr>
+                      <td>{t(i18nKeys.faqClaudeIssue)}</td>
+                      <td>
+                        {t(i18nKeys.faqClaudeCauseBefore)}
+                        <Code>/v1</Code>
+                        {t(i18nKeys.faqClaudeCauseAfter)}
+                      </td>
+                      <td>
+                        {t(i18nKeys.faqClaudeActionBefore)}
+                        <Code>{TOKENSAVER_ROOT}</Code>
+                        {t(i18nKeys.faqClaudeActionAfter)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
-          {/* ===== 帮助与反馈 ===== */}
-          <section className={styles.section} id="support">
-            <div className={styles.sectionBody}>
-              <h2 className={styles.heading2}>{t(i18nKeys.supportTitle)}</h2>
-              <p className={styles.sectionLede}>{t(i18nKeys.supportLead)}</p>
+              <h3 className={styles.heading3}>
+                {t(i18nKeys.errorStructureTitle)}
+              </h3>
+              <pre className={styles.pre}>
+                <code className={styles.preCode}>{`{
+  "error": {
+    "message": "模型不存在或当前分组不可用",
+    "type": "invalid_request_error",
+    "code": "model_not_found"
+  }
+}`}</code>
+              </pre>
+
+              <div className={styles.note}>
+                {t(i18nKeys.troubleshootingNote)}
+              </div>
             </div>
           </section>
 
@@ -502,6 +747,40 @@ print(completion.choices[0].message.content)`}</code>
             <div className={styles.sectionBody}>
               <h2 className={styles.heading2}>{t(i18nKeys.policyTitle)}</h2>
               <p className={styles.sectionLede}>{t(i18nKeys.policyLead)}</p>
+              <div className={styles.grid}>
+                <div className={styles.card}>
+                  <strong className={styles.cardTitle}>
+                    {t(i18nKeys.policyTermsTitle)}
+                  </strong>
+                  <p className={styles.paragraph}>
+                    {t(i18nKeys.policyTermsBody)}
+                  </p>
+                </div>
+                <div className={styles.card}>
+                  <strong className={styles.cardTitle}>
+                    {t(i18nKeys.policyBoundaryTitle)}
+                  </strong>
+                  <p className={styles.paragraph}>
+                    {t(i18nKeys.policyBoundaryBody)}
+                  </p>
+                </div>
+                <div className={styles.card}>
+                  <strong className={styles.cardTitle}>
+                    {t(i18nKeys.policyDataTitle)}
+                  </strong>
+                  <p className={styles.paragraph}>
+                    {t(i18nKeys.policyDataBody)}
+                  </p>
+                </div>
+                <div className={styles.card}>
+                  <strong className={styles.cardTitle}>
+                    {t(i18nKeys.policyModelTitle)}
+                  </strong>
+                  <p className={styles.paragraph}>
+                    {t(i18nKeys.policyModelBody)}
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
         </main>
