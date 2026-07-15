@@ -424,7 +424,9 @@ print(completion.choices[0].message.content)`}</code>
 
               <h3 className={styles.heading3}>{t(i18nKeys.sdkStreamTitle)}</h3>
               <pre className={styles.pre}>
-                <code className={styles.preCode}>{`stream = client.chat.completions.create(
+                <code
+                  className={styles.preCode}
+                >{`stream = client.chat.completions.create(
     model="gpt-5.5",
     messages=[{"role": "user", "content": "用一句话介绍 TokenSaver"}],
     stream=True,
@@ -786,9 +788,9 @@ console.log(completion.choices[0].message.content);`}</code>
         </main>
       </div>
 
-      <footer className={styles.footer}>
+      {/* <footer className={styles.footer}>
         <div className={styles.footerInner}>{t(i18nKeys.footerText)}</div>
-      </footer>
+      </footer> */}
     </div>
   );
 };
