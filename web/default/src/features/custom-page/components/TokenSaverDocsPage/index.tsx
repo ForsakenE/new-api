@@ -5,6 +5,8 @@ import { PublicLayout } from "@/components/layout";
 import { useTheme } from "@/context/theme-provider";
 import { resolveResourceLang } from "@/features/custom-page/lang";
 
+import ccSwitchConfirmImage from "./assets/tokensaver-cc-switch-confirm.png";
+import ccSwitchFillImage from "./assets/tokensaver-cc-switch-fill.png";
 import ccSwitchImportImage from "./assets/tokensaver-cc-switch-import.png";
 import overviewImage from "./assets/tokensaver-overview-screen.png";
 import logsImage from "./assets/tokensaver-usage-logs-screen.png";
@@ -351,7 +353,32 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
                   <Code>CC Switch</Code>
                   {t(i18nKeys.ccSwitchStep2After)}
                 </li>
-                <li>{t(i18nKeys.ccSwitchStep3)}</li>
+                <li>
+                  {t(i18nKeys.ccSwitchStep3Before)}
+                  <Code>Claude</Code>
+                  {t(i18nKeys.ccSwitchStep3Middle1)}
+                  <Code>Codex</Code>
+                  {t(i18nKeys.ccSwitchStep3Middle2)}
+                  <Code>Gemini</Code>
+                  {t(i18nKeys.ccSwitchStep3After)}
+                </li>
+                <li>
+                  {t(i18nKeys.ccSwitchStep4Before)}
+                  <Code>Haiku</Code>
+                  {t(i18nKeys.ccSwitchStep4Middle1)}
+                  <Code>Sonnet</Code>
+                  {t(i18nKeys.ccSwitchStep4Middle2)}
+                  <Code>Opus</Code>
+                  {t(i18nKeys.ccSwitchStep4After)}
+                </li>
+                <li>
+                  {t(i18nKeys.ccSwitchStep5Before)}
+                  <Code>{t(i18nKeys.ccSwitchOpenButton)}</Code>
+                  {t(i18nKeys.ccSwitchStep5Middle)}
+                  <Code>{t(i18nKeys.ccSwitchImportButton)}</Code>
+                  {t(i18nKeys.ccSwitchStep5After)}
+                </li>
+                <li>{t(i18nKeys.ccSwitchStep6)}</li>
               </ol>
               <img
                 className={styles.shot}
@@ -363,6 +390,29 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
                 <Code>CC Switch</Code>
                 {t(i18nKeys.ccSwitchCaptionAfter)}
               </p>
+              <img
+                className={styles.shot}
+                src={ccSwitchFillImage}
+                alt={t(i18nKeys.ccSwitchFillAlt)}
+              />
+              <p className={styles.caption}>{t(i18nKeys.ccSwitchFillCaption)}</p>
+              <img
+                className={styles.shot}
+                src={ccSwitchConfirmImage}
+                alt={t(i18nKeys.ccSwitchConfirmAlt)}
+              />
+              <p className={styles.caption}>
+                {t(i18nKeys.ccSwitchConfirmCaptionBefore)}
+                <Code>{t(i18nKeys.ccSwitchImportButton)}</Code>
+                {t(i18nKeys.ccSwitchConfirmCaptionAfter)}
+              </p>
+              <div className={styles.note}>
+                {t(i18nKeys.ccSwitchNoteBefore)}
+                <Code>{TOKENSAVER_V1}</Code>
+                {t(i18nKeys.ccSwitchNoteMiddle)}
+                <Code>{TOKENSAVER_ROOT}</Code>
+                {t(i18nKeys.ccSwitchNoteAfter)}
+              </div>
             </div>
           </section>
 
