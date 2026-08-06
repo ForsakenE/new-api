@@ -57,7 +57,11 @@ const CAPABILITY_LABEL_KEYS: Record<string, string> = {
   web_search: 'Web search',
   code_interpreter: 'Code interpreter',
   caching: 'Prompt caching',
+  prompt_caching: 'Prompt caching',
   embeddings: 'Embeddings',
+  search_grounding: 'Search grounding',
+  image_generation: 'Image generation',
+  fine_tuning: 'Fine tuning',
 }
 
 export interface ModelCardProps {
