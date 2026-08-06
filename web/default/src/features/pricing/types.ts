@@ -62,8 +62,8 @@ export type PricingModel = {
    */
   context_length?: number // 上下文长度
   max_output?: number // 最大输出令牌数
-  input_modalities?: string // 输入模态（逗号分隔）
-  output_modalities?: string // 输出模态（逗号分隔）
+  input_modalities?: string[] // 输入模态
+  output_modalities?: string[] // 输出模态
   capabilities?: string[] // 能力标签
   input_price?: number // 输入价格（USD/M tokens）
   output_price?: number // 输出价格（USD/M tokens）

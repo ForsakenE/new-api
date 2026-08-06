@@ -36,6 +36,14 @@ import { formatPrice, formatRequestPrice } from '../lib/price'
 import type { PricingModel, TokenUnit } from '../types'
 import { ModelPerfBadge, type ModelPerfBadgeData } from './model-perf-badge'
 
+const MODALITY_LABEL_KEYS: Record<string, string> = {
+  text: 'text',
+  image: 'image',
+  audio: 'audio',
+  video: 'video',
+  file: 'file',
+}
+
 export interface ModelCardProps {
   model: PricingModel
   onClick: () => void
@@ -251,8 +259,8 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
       {/* Extended metadata: context, max output, modalities, capabilities */}
       {(props.model.context_length ||
         props.model.max_output ||
-        props.model.input_modalities ||
-        props.model.output_modalities ||
+        (props.model.input_modalities && props.model.input_modalities.length > 0) ||
+        (props.model.output_modalities && props.model.output_modalities.length > 0) ||
         (props.model.capabilities && props.model.capabilities.length > 0)) && (
         <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground/80'>
           {props.model.context_length && (
@@ -265,19 +273,19 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
               {t('Max Output')}: <span className='font-mono'>{(props.model.max_output / 1000).toFixed(0)}K</span>
             </span>
           )}
-          {props.model.input_modalities && (
+          {props.model.input_modalities && props.model.input_modalities.length > 0 && (
             <span>
-              {t('Input')}: {props.model.input_modalities}
+              {t('Input')}: {props.model.input_modalities.map((m) => t(MODALITY_LABEL_KEYS[m] ?? m)).join('、')}
             </span>
           )}
-          {props.model.output_modalities && (
+          {props.model.output_modalities && props.model.output_modalities.length > 0 && (
             <span>
-              {t('Output')}: {props.model.output_modalities}
+              {t('Output')}: {props.model.output_modalities.map((m) => t(MODALITY_LABEL_KEYS[m] ?? m)).join('、')}
             </span>
           )}
           {props.model.capabilities && props.model.capabilities.length > 0 && (
             <span>
-              {props.model.capabilities.slice(0, 3).join(', ')}
+              {props.model.capabilities.slice(0, 3).map((c) => t(c)).join('、')}
               {props.model.capabilities.length > 3 && ` +${props.model.capabilities.length - 3}`}
             </span>
           )}

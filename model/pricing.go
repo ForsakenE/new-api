@@ -36,6 +36,11 @@ type Pricing struct {
 	BillingMode            string                  `json:"billing_mode,omitempty"`
 	BillingExpr            string                  `json:"billing_expr,omitempty"`
 	PricingVersion         string                  `json:"pricing_version,omitempty"`
+	ContextLength          int64                   `json:"context_length,omitempty"`
+	InputModalities        []string                `json:"input_modalities,omitempty"`
+	OutputModalities       []string                `json:"output_modalities,omitempty"`
+	MaxOutput              *int                    `json:"max_output,omitempty"`
+	Capabilities           []string                `json:"capabilities,omitempty"`
 }
 
 type PricingVendor struct {
@@ -303,6 +308,16 @@ func updatePricing() {
 			pricing.Icon = meta.Icon
 			pricing.Tags = meta.Tags
 			pricing.VendorID = meta.VendorID
+			pricing.ContextLength = meta.ContextLength
+			pricing.InputModalities = splitModalities(meta.InputModalities)
+			pricing.OutputModalities = splitModalities(meta.OutputModalities)
+			// 从 endpoints JSON 解析 max_output 和 capabilities
+			if mo := meta.GetMaxOutput(); mo != nil {
+				pricing.MaxOutput = mo
+			}
+			if caps := meta.GetCapabilities(); len(caps) > 0 {
+				pricing.Capabilities = caps
+			}
 		}
 		modelPrice, findPrice := ratio_setting.GetModelPrice(model, false)
 		if findPrice {
@@ -361,4 +376,19 @@ func updatePricing() {
 // GetSupportedEndpointMap 返回全局端点到路径的映射
 func GetSupportedEndpointMap() map[string]common.EndpointInfo {
 	return supportedEndpointMap
+}
+
+// splitModalities 将逗号分隔的模态字符串拆分为切片，过滤空白项。
+func splitModalities(s string) []string {
+	if strings.TrimSpace(s) == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if t := strings.TrimSpace(p); t != "" {
+			out = append(out, t)
+		}
+	}
+	return out
 }

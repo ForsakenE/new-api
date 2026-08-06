@@ -107,11 +107,11 @@ const CAPABILITY_LABEL_KEYS: Record<ModelCapability, string> = {
 }
 
 const MODALITY_LABEL_KEYS: Record<string, string> = {
-  text: 'Text',
-  image: 'Image',
-  audio: 'Audio',
-  video: 'Video',
-  file: 'File',
+  text: 'text',
+  image: 'image',
+  audio: 'audio',
+  video: 'video',
+  file: 'file',
 }
 
 const TOKEN_FORMAT = new Intl.NumberFormat(undefined, {
@@ -267,10 +267,13 @@ function ModalityLabels(props: { items: string[] }) {
   if (props.items.length === 0) return null
 
   return (
-    <span className='inline-flex items-center gap-1 align-middle'>
-      {props.items.map((item) => (
-        <span key={item} className='font-medium'>
-          {t(MODALITY_LABEL_KEYS[item] ?? item)}
+    <span className='inline-flex flex-wrap items-center gap-1 align-middle'>
+      {props.items.map((item, index) => (
+        <span key={item}>
+          <span className='font-medium'>
+            {t(MODALITY_LABEL_KEYS[item] ?? item)}
+          </span>
+          {index < props.items.length - 1 && <span className='text-muted-foreground'>、</span>}
         </span>
       ))}
     </span>
@@ -280,13 +283,8 @@ function ModalityLabels(props: { items: string[] }) {
 function ModelBackendQuickStats(props: { model: PricingModel }) {
   const { t } = useTranslation()
   const model = props.model
-  // Parse comma-separated modalities from backend
-  const inputModalities = model.input_modalities
-    ? model.input_modalities.split(',').map((m) => m.trim()).filter(Boolean)
-    : []
-  const outputModalities = model.output_modalities
-    ? model.output_modalities.split(',').map((m) => m.trim()).filter(Boolean)
-    : []
+  const inputModalities = model.input_modalities ?? []
+  const outputModalities = model.output_modalities ?? []
   const contextLength = model.context_length ?? 0
   const maxOutput = model.max_output ?? 0
   const knowledgeCutoff = formatCatalogYearMonth(model.knowledge_cutoff)
@@ -370,7 +368,7 @@ function ModelBackendQuickStats(props: { model: PricingModel }) {
               <Icon className='size-3 shrink-0' />
               <span className='truncate'>{stat.label}</span>
             </span>
-            <span className='text-foreground truncate text-sm font-semibold tabular-nums'>
+            <span className='text-foreground flex min-w-0 flex-wrap items-center gap-1 text-sm font-semibold tabular-nums'>
               {stat.value}
             </span>
             {stat.hint && (
@@ -388,13 +386,8 @@ function ModelBackendQuickStats(props: { model: PricingModel }) {
 function ModelBackendSignalsSection(props: { model: PricingModel }) {
   const { t } = useTranslation()
   const capabilities = props.model.capabilities ?? []
-  // Parse comma-separated modalities from backend
-  const inputModalities = props.model.input_modalities
-    ? props.model.input_modalities.split(',').map((m) => m.trim()).filter(Boolean)
-    : []
-  const outputModalities = props.model.output_modalities
-    ? props.model.output_modalities.split(',').map((m) => m.trim()).filter(Boolean)
-    : []
+  const inputModalities = props.model.input_modalities ?? []
+  const outputModalities = props.model.output_modalities ?? []
 
   if (
     capabilities.length === 0 &&
