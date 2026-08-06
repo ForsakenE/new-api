@@ -37,11 +37,27 @@ import type { PricingModel, TokenUnit } from '../types'
 import { ModelPerfBadge, type ModelPerfBadgeData } from './model-perf-badge'
 
 const MODALITY_LABEL_KEYS: Record<string, string> = {
-  text: 'text',
-  image: 'image',
-  audio: 'audio',
-  video: 'video',
-  file: 'file',
+  text: 'Text',
+  image: 'Image',
+  audio: 'Audio',
+  video: 'Video',
+  file: 'File',
+}
+
+const CAPABILITY_LABEL_KEYS: Record<string, string> = {
+  function_calling: 'Function calling',
+  streaming: 'Streaming',
+  vision: 'Vision',
+  json_mode: 'JSON mode',
+  structured_output: 'Structured output',
+  reasoning: 'Reasoning',
+  tools: 'Tools',
+  tool_calling: 'Tool calling',
+  system_prompt: 'System prompt',
+  web_search: 'Web search',
+  code_interpreter: 'Code interpreter',
+  caching: 'Prompt caching',
+  embeddings: 'Embeddings',
 }
 
 export interface ModelCardProps {
@@ -262,32 +278,58 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
         (props.model.input_modalities && props.model.input_modalities.length > 0) ||
         (props.model.output_modalities && props.model.output_modalities.length > 0) ||
         (props.model.capabilities && props.model.capabilities.length > 0)) && (
-        <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground/80'>
-          {props.model.context_length && (
-            <span>
-              {t('Context')}: <span className='font-mono'>{(props.model.context_length / 1000).toFixed(0)}K</span>
-            </span>
+        <div className='mt-3 space-y-1.5 text-xs'>
+          {/* Stats: context + max output */}
+          {(props.model.context_length || props.model.max_output) && (
+            <div className='flex flex-wrap gap-x-3 gap-y-1 text-muted-foreground/70'>
+              {props.model.context_length > 0 && (
+                <span>
+                  {t('Context')}{' '}
+                  <span className='font-mono font-medium text-foreground/70'>
+                    {(props.model.context_length / 1000).toFixed(0)}K
+                  </span>
+                </span>
+              )}
+              {props.model.max_output && props.model.max_output > 0 && (
+                <span>
+                  {t('Max output')}{' '}
+                  <span className='font-mono font-medium text-foreground/70'>
+                    {(props.model.max_output / 1000).toFixed(0)}K
+                  </span>
+                </span>
+              )}
+            </div>
           )}
-          {props.model.max_output && (
-            <span>
-              {t('Max Output')}: <span className='font-mono'>{(props.model.max_output / 1000).toFixed(0)}K</span>
-            </span>
+          {/* Modality chips */}
+          {(props.model.input_modalities?.length > 0 || props.model.output_modalities?.length > 0) && (
+            <div className='flex flex-wrap items-center gap-1'>
+              {props.model.input_modalities?.map((m) => (
+                <span key={`in-${m}`} className='inline-flex items-center rounded-full bg-muted/70 px-2 py-0.5 text-muted-foreground'>
+                  {t(MODALITY_LABEL_KEYS[m] ?? m)}
+                </span>
+              ))}
+              {props.model.input_modalities?.length > 0 && props.model.output_modalities?.length > 0 && (
+                <span className='text-muted-foreground/30'>→</span>
+              )}
+              {props.model.output_modalities?.map((m) => (
+                <span key={`out-${m}`} className='inline-flex items-center rounded-full bg-muted/70 px-2 py-0.5 text-muted-foreground'>
+                  {t(MODALITY_LABEL_KEYS[m] ?? m)}
+                </span>
+              ))}
+            </div>
           )}
-          {props.model.input_modalities && props.model.input_modalities.length > 0 && (
-            <span>
-              {t('Input')}: {props.model.input_modalities.map((m) => t(MODALITY_LABEL_KEYS[m] ?? m)).join('、')}
-            </span>
-          )}
-          {props.model.output_modalities && props.model.output_modalities.length > 0 && (
-            <span>
-              {t('Output')}: {props.model.output_modalities.map((m) => t(MODALITY_LABEL_KEYS[m] ?? m)).join('、')}
-            </span>
-          )}
+          {/* Capability chips */}
           {props.model.capabilities && props.model.capabilities.length > 0 && (
-            <span>
-              {props.model.capabilities.slice(0, 3).map((c) => t(c)).join('、')}
-              {props.model.capabilities.length > 3 && ` +${props.model.capabilities.length - 3}`}
-            </span>
+            <div className='flex flex-wrap items-center gap-1'>
+              {props.model.capabilities.slice(0, 4).map((c) => (
+                <span key={c} className='inline-flex items-center rounded-full bg-muted/70 px-2 py-0.5 text-muted-foreground'>
+                  {t(CAPABILITY_LABEL_KEYS[c] ?? c)}
+                </span>
+              ))}
+              {props.model.capabilities.length > 4 && (
+                <span className='text-muted-foreground/40'>+{props.model.capabilities.length - 4}</span>
+              )}
+            </div>
           )}
         </div>
       )}

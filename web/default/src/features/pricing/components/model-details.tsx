@@ -70,7 +70,6 @@ import { parseTags } from '../lib/filters'
 import { getAvailableGroups, isTokenBasedModel } from '../lib/model-helpers'
 import { formatFixedPrice, formatGroupPrice } from '../lib/price'
 import type {
-  ModelCapability,
   PriceType,
   PricingModel,
   TokenUnit,
@@ -91,7 +90,7 @@ function SectionTitle(props: { children: React.ReactNode }) {
   )
 }
 
-const CAPABILITY_LABEL_KEYS: Record<ModelCapability, string> = {
+const CAPABILITY_LABEL_KEYS: Record<string, string> = {
   function_calling: 'Function calling',
   streaming: 'Streaming',
   vision: 'Vision',
@@ -99,6 +98,7 @@ const CAPABILITY_LABEL_KEYS: Record<ModelCapability, string> = {
   structured_output: 'Structured output',
   reasoning: 'Reasoning',
   tools: 'Tools',
+  tool_calling: 'Tool calling',
   system_prompt: 'System prompt',
   web_search: 'Web search',
   code_interpreter: 'Code interpreter',
@@ -107,11 +107,11 @@ const CAPABILITY_LABEL_KEYS: Record<ModelCapability, string> = {
 }
 
 const MODALITY_LABEL_KEYS: Record<string, string> = {
-  text: 'text',
-  image: 'image',
-  audio: 'audio',
-  video: 'video',
-  file: 'file',
+  text: 'Text',
+  image: 'Image',
+  audio: 'Audio',
+  video: 'Video',
+  file: 'File',
 }
 
 const TOKEN_FORMAT = new Intl.NumberFormat(undefined, {
@@ -406,10 +406,7 @@ function ModelBackendSignalsSection(props: { model: PricingModel }) {
         {capabilities.length > 0 ? (
           <CatalogPillList
             items={capabilities.map((capability) =>
-              t(
-                CAPABILITY_LABEL_KEYS[capability as ModelCapability] ??
-                  capability
-              )
+              t(CAPABILITY_LABEL_KEYS[capability] ?? capability)
             )}
           />
         ) : (
