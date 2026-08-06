@@ -280,10 +280,15 @@ function ModalityLabels(props: { items: string[] }) {
 function ModelBackendQuickStats(props: { model: PricingModel }) {
   const { t } = useTranslation()
   const model = props.model
-  const inputModalities = normalizeCatalogItems(model.input_modalities)
-  const outputModalities = normalizeCatalogItems(model.output_modalities)
+  // Parse comma-separated modalities from backend
+  const inputModalities = model.input_modalities
+    ? model.input_modalities.split(',').map((m) => m.trim()).filter(Boolean)
+    : []
+  const outputModalities = model.output_modalities
+    ? model.output_modalities.split(',').map((m) => m.trim()).filter(Boolean)
+    : []
   const contextLength = model.context_length ?? 0
-  const maxOutput = model.max_output_tokens ?? 0
+  const maxOutput = model.max_output ?? 0
   const knowledgeCutoff = formatCatalogYearMonth(model.knowledge_cutoff)
   const releaseDate = formatCatalogYearMonth(model.release_date)
 
@@ -382,9 +387,14 @@ function ModelBackendQuickStats(props: { model: PricingModel }) {
 
 function ModelBackendSignalsSection(props: { model: PricingModel }) {
   const { t } = useTranslation()
-  const capabilities = normalizeCatalogItems(props.model.capabilities)
-  const inputModalities = normalizeCatalogItems(props.model.input_modalities)
-  const outputModalities = normalizeCatalogItems(props.model.output_modalities)
+  const capabilities = props.model.capabilities ?? []
+  // Parse comma-separated modalities from backend
+  const inputModalities = props.model.input_modalities
+    ? props.model.input_modalities.split(',').map((m) => m.trim()).filter(Boolean)
+    : []
+  const outputModalities = props.model.output_modalities
+    ? props.model.output_modalities.split(',').map((m) => m.trim()).filter(Boolean)
+    : []
 
   if (
     capabilities.length === 0 &&

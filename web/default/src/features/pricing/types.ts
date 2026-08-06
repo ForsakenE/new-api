@@ -57,36 +57,20 @@ export type PricingModel = {
   /** Pricing version returned by backend, useful for cache busting */
   pricing_version?: string
   /**
-   * Optional model metadata fields reserved for backend-provided catalog data.
-   * Keep them data-driven; do not synthesize display values on the client.
+   * Extended metadata fields synced from Buyer.
+   * Parsed from models.endpoints JSON + independent columns.
    */
-  context_length?: number
-  max_output_tokens?: number
-  knowledge_cutoff?: string
-  release_date?: string
-  parameter_count?: string
-  input_modalities?: Modality[]
-  output_modalities?: Modality[]
-  capabilities?: ModelCapability[]
+  context_length?: number // 上下文长度
+  max_output?: number // 最大输出令牌数
+  input_modalities?: string // 输入模态（逗号分隔）
+  output_modalities?: string // 输出模态（逗号分隔）
+  capabilities?: string[] // 能力标签
+  input_price?: number // 输入价格（USD/M tokens）
+  output_price?: number // 输出价格（USD/M tokens）
+  cache_price?: number // 缓存价格（USD/M tokens）
+  lifecycle_status?: string // 生命周期状态
+  lifecycle_notice?: string // 生命周期通知 URL
 }
-
-/** Input/output modalities supported by a model. */
-export type Modality = 'text' | 'image' | 'audio' | 'video' | 'file'
-
-/** Functional capabilities a model exposes. */
-export type ModelCapability =
-  | 'function_calling'
-  | 'streaming'
-  | 'vision'
-  | 'json_mode'
-  | 'structured_output'
-  | 'reasoning'
-  | 'tools'
-  | 'system_prompt'
-  | 'web_search'
-  | 'code_interpreter'
-  | 'caching'
-  | 'embeddings'
 
 export type PricingData = {
   success: boolean
@@ -109,3 +93,18 @@ export type PriceType =
   | 'audio_input'
   | 'audio_output'
 export type QuotaType = 0 | 1 // 0: token-based, 1: per-request
+
+// Helper types for known capability values (backend may send any string)
+export type ModelCapability =
+  | 'function_calling'
+  | 'streaming'
+  | 'vision'
+  | 'json_mode'
+  | 'structured_output'
+  | 'reasoning'
+  | 'tools'
+  | 'system_prompt'
+  | 'web_search'
+  | 'code_interpreter'
+  | 'caching'
+  | 'embeddings'

@@ -248,6 +248,42 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
         {props.model.description || t('No description available.')}
       </p>
 
+      {/* Extended metadata: context, max output, modalities, capabilities */}
+      {(props.model.context_length ||
+        props.model.max_output ||
+        props.model.input_modalities ||
+        props.model.output_modalities ||
+        (props.model.capabilities && props.model.capabilities.length > 0)) && (
+        <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground/80'>
+          {props.model.context_length && (
+            <span>
+              {t('Context')}: <span className='font-mono'>{(props.model.context_length / 1000).toFixed(0)}K</span>
+            </span>
+          )}
+          {props.model.max_output && (
+            <span>
+              {t('Max Output')}: <span className='font-mono'>{(props.model.max_output / 1000).toFixed(0)}K</span>
+            </span>
+          )}
+          {props.model.input_modalities && (
+            <span>
+              {t('Input')}: {props.model.input_modalities}
+            </span>
+          )}
+          {props.model.output_modalities && (
+            <span>
+              {t('Output')}: {props.model.output_modalities}
+            </span>
+          )}
+          {props.model.capabilities && props.model.capabilities.length > 0 && (
+            <span>
+              {props.model.capabilities.slice(0, 3).join(', ')}
+              {props.model.capabilities.length > 3 && ` +${props.model.capabilities.length - 3}`}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Footer: left metadata and right performance summary share row alignment */}
       <div className='mt-2 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2 gap-y-1 sm:mt-4'>
         <div className='flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1'>
