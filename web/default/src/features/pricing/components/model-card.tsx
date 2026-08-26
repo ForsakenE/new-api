@@ -16,12 +16,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { ChevronRight, Copy, Gauge, Layers, Timer } from 'lucide-react'
+import { ChevronRight, Copy } from 'lucide-react'
 import { memo, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
-
-import { getSuccessRateDotClass } from '@/features/performance-metrics/lib/format'
+import { StatusBadge } from '@/components/status-badge'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { getLobeIcon } from '@/lib/lobe-icon'
 import { cn } from '@/lib/utils'
@@ -31,16 +30,11 @@ import {
   getDynamicDisplayGroupRatio,
   getDynamicPricingSummary,
 } from '../lib/dynamic-price'
-
-import {
-  CAPABILITY_LABEL_KEYS,
-  formatCatalogTokenCount,
-  getCoreCapabilities,
-  isTokenBasedModel,
-} from '../lib/model-helpers'
+import { parseTags } from '../lib/filters'
+import { isTokenBasedModel } from '../lib/model-helpers'
 import { formatPrice, formatRequestPrice } from '../lib/price'
 import type { PricingModel, TokenUnit } from '../types'
-import type { ModelPerfBadgeData } from './model-perf-badge'
+import { ModelPerfBadge, type ModelPerfBadgeData } from './model-perf-badge'
 
 export interface ModelCardProps {
   model: PricingModel
@@ -62,6 +56,9 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
   const showRechargePrice = props.showRechargePrice ?? false
   const isTokenBased = isTokenBasedModel(props.model)
   const tokenUnitLabel = tokenUnit === 'K' ? '1K' : '1M'
+  const tags = parseTags(props.model.tags)
+  const groups = props.model.enable_groups || []
+  const endpoints = props.model.supported_endpoint_types || []
   const modelIconKey = props.model.icon || props.model.vendor_icon
   const modelIcon = modelIconKey ? getLobeIcon(modelIconKey, 28) : null
   const initial = props.model.model_name?.charAt(0).toUpperCase() || '?'
@@ -82,35 +79,17 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
       })
     : null
 
-  const contextLabel = formatCatalogTokenCount(props.model.context_length)
-  const coreCapabilities = getCoreCapabilities(props.model.capabilities, 3)
+  const primaryGroup = groups[0]
+  const bottomTags = [...endpoints.slice(0, 2), ...tags.slice(0, 2)]
+  const hiddenCount =
+    Math.max(groups.length - 1, 0) +
+    Math.max(endpoints.length - 2, 0) +
+    Math.max(tags.length - 2, 0)
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation()
     copyToClipboard(props.model.model_name || '')
   }
-
-  const perfLatency = (() => {
-    const ms = props.perf?.avg_latency_ms ?? 0
-    if (!Number.isFinite(ms) || ms <= 0) return '-'
-    if (ms >= 1000) return `${(ms / 1000).toFixed(ms >= 10000 ? 0 : 1)}s`
-    return `${Math.round(ms)}ms`
-  })()
-  const perfTps = (() => {
-    const tps = props.perf?.avg_tps ?? 0
-    if (!Number.isFinite(tps) || tps <= 0) return '-'
-    if (tps >= 1000) return `${(tps / 1000).toFixed(1)}Kt/s`
-    return `${tps > 1 ? Math.round(tps) : tps.toFixed(1)}t/s`
-  })()
-  const perfSuccess = (() => {
-    const rate = props.perf?.success_rate
-    if (rate == null || !Number.isFinite(rate)) return '-'
-    return `${rate.toFixed(1)}%`
-  })()
-  const perfSuccessDotClass =
-    props.perf && Number.isFinite(props.perf.success_rate)
-      ? getSuccessRateDotClass(props.perf.success_rate)
-      : 'bg-muted-foreground/30'
 
   let priceSummary: ReactNode
   if (dynamicSummary) {
@@ -224,6 +203,7 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
         'hover:bg-muted/20'
       )}
     >
+      {/* Header: icon + name + price + actions */}
       <div className='flex items-start justify-between gap-2.5 sm:gap-3'>
         <div className='flex min-w-0 items-start gap-2.5 sm:gap-3'>
           <div className='bg-muted/40 flex size-9 shrink-0 items-center justify-center rounded-lg sm:size-10 sm:rounded-xl'>
@@ -263,83 +243,48 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
         </div>
       </div>
 
+      {/* Description */}
       <p className='text-muted-foreground mt-2 line-clamp-1 flex-1 text-[13px] leading-relaxed sm:mt-4 sm:line-clamp-2 sm:min-h-[2.5rem]'>
         {props.model.description || t('No description available.')}
       </p>
 
-      <div className='mt-3 flex min-w-0 items-center gap-2.5 border-t pt-3 text-xs sm:mt-4 sm:gap-3 sm:pt-3.5'>
-        <span className='text-muted-foreground inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap'>
-          <Layers className='size-3.5 shrink-0 opacity-70' />
-          <span>{t('Context')}</span>
-          {contextLabel ? (
-            <span className='text-foreground font-mono text-xs font-semibold tabular-nums'>
-              {contextLabel}
-            </span>
-          ) : (
-            <span className='text-muted-foreground/70'>
-              {t('Context pending')}
+      {/* Footer: left metadata and right performance summary share row alignment */}
+      <div className='mt-2 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2 gap-y-1 sm:mt-4'>
+        <div className='flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1'>
+          {primaryGroup && (
+            <span className='text-muted-foreground text-xs font-medium'>
+              {primaryGroup} {t('Groups')}
             </span>
           )}
-        </span>
-        <div className='flex min-w-0 flex-1 flex-wrap items-center gap-1.5 overflow-hidden'>
-          {coreCapabilities.items.length > 0 ? (
-            <>
-              {coreCapabilities.items.map((capability) => (
-                <span
-                  key={capability}
-                  className='bg-muted/70 text-muted-foreground inline-flex h-[22px] shrink-0 items-center rounded-md border px-1.5 text-[10px] whitespace-nowrap'
-                >
-                  {t(CAPABILITY_LABEL_KEYS[capability] ?? capability)}
-                </span>
-              ))}
-              {coreCapabilities.remaining > 0 && (
-                <span className='bg-muted/40 text-muted-foreground/70 inline-flex h-[22px] shrink-0 items-center rounded-md border px-1.5 text-[10px] whitespace-nowrap'>
-                  +{coreCapabilities.remaining}
-                </span>
-              )}
-            </>
-          ) : (
-            <span className='text-muted-foreground/60 whitespace-nowrap'>
-              {t('Capabilities pending')}
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className='text-muted-foreground mt-auto flex items-center justify-between gap-3 pt-3 text-[11px]'>
-        <div className='flex min-w-0 items-center gap-3'>
-          <span
-            className='inline-flex items-center gap-1.5'
-            title={t('Average latency')}
-          >
-            <Timer className='size-3.5 shrink-0 opacity-70' />
-            <span className='font-mono text-xs leading-none tabular-nums'>
-              {perfLatency}
-            </span>
+          <span className='text-muted-foreground text-xs font-medium'>
+            {isTokenBased ? t('Token-based') : t('Per Request')}
           </span>
-          <span
-            className='inline-flex items-center gap-1.5'
-            title={t('Throughput')}
-          >
-            <Gauge className='size-3.5 shrink-0 opacity-70' />
-            <span className='font-mono text-xs leading-none tabular-nums'>
-              {perfTps}
-            </span>
-          </span>
-        </div>
-        <span
-          className='inline-flex shrink-0 items-center gap-1.5'
-          title={t('Success rate')}
-        >
-          <span className='inline-flex size-3.5 shrink-0 items-center justify-center'>
-            <span
-              className={cn('size-1.5 rounded-full', perfSuccessDotClass)}
+          {isDynamicPricing && (
+            <StatusBadge
+              label={t('Dynamic Pricing')}
+              variant='warning'
+              copyable={false}
+              size='sm'
             />
+          )}
+        </div>
+        <ModelPerfBadge perf={props.perf} className='row-span-2 self-start' />
+
+        <div className='flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-0.5 sm:gap-x-3 sm:gap-y-1'>
+          {bottomTags.map((item) => (
+            <span key={item} className='text-muted-foreground/70 text-xs'>
+              {item}
+            </span>
+          ))}
+          <span className='text-muted-foreground/50 text-xs'>
+            {tokenUnitLabel}
           </span>
-          <span className='font-mono text-xs leading-none tabular-nums'>
-            {perfSuccess}
-          </span>
-        </span>
+          {hiddenCount > 0 && (
+            <span className='text-muted-foreground/40 text-xs'>
+              +{hiddenCount}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -1,4 +1,4 @@
-﻿/*
+/*
 Copyright (C) 2023-2026 QuantumNous
 
 This program is free software: you can redistribute it and/or modify
@@ -106,90 +106,4 @@ export function replaceModelInPath(path: string, modelName: string): string {
  */
 export function isTokenBasedModel(model: PricingModel): boolean {
   return model.quota_type === QUOTA_TYPE_VALUES.TOKEN
-}
-
-// ----------------------------------------------------------------------------
-// Catalog display helpers (model square cards / table)
-// ----------------------------------------------------------------------------
-
-const TOKEN_COUNT_FORMAT = new Intl.NumberFormat(undefined, {
-  maximumFractionDigits: 1,
-})
-
-/** PRD core capability priority: vision → tools → structured → reasoning → search → code → others */
-const CORE_CAPABILITY_PRIORITY: Record<string, number> = {
-  vision: 0,
-  tools: 1,
-  tool_calling: 1,
-  function_calling: 1,
-  structured_output: 2,
-  json_mode: 2,
-  reasoning: 3,
-  web_search: 4,
-  search_grounding: 4,
-  code_interpreter: 5,
-}
-
-export const CAPABILITY_LABEL_KEYS: Record<string, string> = {
-  function_calling: 'Function calling',
-  streaming: 'Streaming',
-  vision: 'Vision',
-  json_mode: 'JSON mode',
-  structured_output: 'Structured output',
-  reasoning: 'Reasoning',
-  tools: 'Tools',
-  tool_calling: 'Tool calling',
-  system_prompt: 'System prompt',
-  web_search: 'Web search',
-  code_interpreter: 'Code interpreter',
-  caching: 'Prompt caching',
-  prompt_caching: 'Prompt caching',
-  embeddings: 'Embeddings',
-  search_grounding: 'Search grounding',
-  image_generation: 'Image generation',
-  fine_tuning: 'Fine tuning',
-}
-
-export function formatCatalogTokenCount(tokens?: number | null): string {
-  if (tokens == null || !Number.isFinite(tokens) || tokens <= 0) return ''
-  if (tokens >= 1_000_000) {
-    return `${TOKEN_COUNT_FORMAT.format(tokens / 1_000_000)}M`
-  }
-  if (tokens >= 1_000) {
-    return `${TOKEN_COUNT_FORMAT.format(tokens / 1_000)}K`
-  }
-  return TOKEN_COUNT_FORMAT.format(tokens)
-}
-
-/**
- * Pick up to `limit` core capabilities for card/table summary.
- * Sorted by PRD priority; overflow is reported as remaining count.
- */
-export function getCoreCapabilities(
-  capabilities?: readonly string[] | null,
-  limit = 3
-): { items: string[]; remaining: number } {
-  if (!capabilities || capabilities.length === 0) {
-    return { items: [], remaining: 0 }
-  }
-
-  const seen = new Set<string>()
-  const ranked = capabilities
-    .map((capability, index) => ({
-      capability,
-      index,
-      priority: CORE_CAPABILITY_PRIORITY[capability] ?? 100 + index,
-    }))
-    .filter((entry) => {
-      if (seen.has(entry.capability)) return false
-      seen.add(entry.capability)
-      return entry.capability.trim().length > 0
-    })
-    .sort((a, b) => a.priority - b.priority || a.index - b.index)
-    .map((entry) => entry.capability)
-
-  return {
-    items: ranked.slice(0, limit),
-    remaining: Math.max(ranked.length - limit, 0),
-  }
 }

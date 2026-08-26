@@ -22,6 +22,7 @@ import {
   ArrowLeft,
   CalendarClock,
   Code2,
+  FileText,
   HeartPulse,
   Info,
   Layers,
@@ -69,6 +70,7 @@ import { parseTags } from '../lib/filters'
 import { getAvailableGroups, isTokenBasedModel } from '../lib/model-helpers'
 import { formatFixedPrice, formatGroupPrice } from '../lib/price'
 import type {
+  ModelCapability,
   PriceType,
   PricingModel,
   TokenUnit,
@@ -89,10 +91,7 @@ function SectionTitle(props: { children: React.ReactNode }) {
   )
 }
 
-const DETAIL_SECTION_CLASS =
-  'bg-card/40 space-y-4 rounded-xl border p-4 shadow-sm'
-
-const CAPABILITY_LABEL_KEYS: Record<string, string> = {
+const CAPABILITY_LABEL_KEYS: Record<ModelCapability, string> = {
   function_calling: 'Function calling',
   streaming: 'Streaming',
   vision: 'Vision',
@@ -100,16 +99,11 @@ const CAPABILITY_LABEL_KEYS: Record<string, string> = {
   structured_output: 'Structured output',
   reasoning: 'Reasoning',
   tools: 'Tools',
-  tool_calling: 'Tool calling',
   system_prompt: 'System prompt',
   web_search: 'Web search',
   code_interpreter: 'Code interpreter',
   caching: 'Prompt caching',
-  prompt_caching: 'Prompt caching',
   embeddings: 'Embeddings',
-  search_grounding: 'Search grounding',
-  image_generation: 'Image generation',
-  fine_tuning: 'Fine tuning',
 }
 
 const MODALITY_LABEL_KEYS: Record<string, string> = {
@@ -159,7 +153,7 @@ function OverviewMetric(props: {
   const Icon = props.icon
 
   return (
-    <div className='bg-background flex min-w-0 items-center gap-2 px-3 py-2.5'>
+    <div className='flex min-w-0 items-center gap-2 px-3 py-2'>
       <Icon className='text-muted-foreground/70 size-3.5 shrink-0' />
       <div className='min-w-0 flex-1'>
         <div className='text-muted-foreground truncate text-[10px] font-medium tracking-wider uppercase'>
@@ -213,7 +207,7 @@ function OverviewSummaryGrid(props: { model: PricingModel }) {
       : 0
 
   return (
-    <div className='bg-border/60 grid overflow-hidden rounded-lg border sm:grid-cols-3 sm:divide-x sm:divide-border/60'>
+    <div className='bg-muted/20 grid overflow-hidden rounded-lg border sm:grid-cols-3 sm:divide-x'>
       <OverviewMetric
         icon={Timer}
         label='TPS'
@@ -259,7 +253,7 @@ function CatalogTextValue(props: { children: React.ReactNode }) {
 
 function CatalogInfoCell(props: { label: string; children: React.ReactNode }) {
   return (
-    <div className='bg-background flex min-w-0 flex-col gap-1 px-3 py-2.5'>
+    <div className='bg-card flex min-w-0 flex-col gap-1 px-3 py-2.5'>
       <span className='text-muted-foreground text-[10px] font-medium tracking-wider uppercase'>
         {props.label}
       </span>
@@ -273,13 +267,10 @@ function ModalityLabels(props: { items: string[] }) {
   if (props.items.length === 0) return null
 
   return (
-    <span className='inline-flex flex-wrap items-center gap-x-0.5'>
-      {props.items.map((item, index) => (
-        <span key={item} className='inline-flex items-center'>
-          <span>{t(MODALITY_LABEL_KEYS[item] ?? item)}</span>
-          {index < props.items.length - 1 && (
-            <span className='text-muted-foreground/70'>、</span>
-          )}
+    <span className='inline-flex items-center gap-1 align-middle'>
+      {props.items.map((item) => (
+        <span key={item} className='font-medium'>
+          {t(MODALITY_LABEL_KEYS[item] ?? item)}
         </span>
       ))}
     </span>
@@ -289,8 +280,10 @@ function ModalityLabels(props: { items: string[] }) {
 function ModelBackendQuickStats(props: { model: PricingModel }) {
   const { t } = useTranslation()
   const model = props.model
+  const inputModalities = normalizeCatalogItems(model.input_modalities)
+  const outputModalities = normalizeCatalogItems(model.output_modalities)
   const contextLength = model.context_length ?? 0
-  const maxOutput = model.max_output ?? 0
+  const maxOutput = model.max_output_tokens ?? 0
   const knowledgeCutoff = formatCatalogYearMonth(model.knowledge_cutoff)
   const releaseDate = formatCatalogYearMonth(model.release_date)
 
@@ -307,11 +300,7 @@ function ModelBackendQuickStats(props: { model: PricingModel }) {
       key: 'context',
       icon: Layers,
       label: t('Context'),
-      value: (
-        <span className='font-mono tabular-nums'>
-          {formatCatalogTokenCount(contextLength)}
-        </span>
-      ),
+      value: formatCatalogTokenCount(contextLength),
       hint: t('Maximum input window'),
     })
   }
@@ -321,12 +310,25 @@ function ModelBackendQuickStats(props: { model: PricingModel }) {
       key: 'max-output',
       icon: Maximize2,
       label: t('Max output'),
+      value: formatCatalogTokenCount(maxOutput),
+      hint: t('Maximum tokens per response'),
+    })
+  }
+
+  if (inputModalities.length > 0 || outputModalities.length > 0) {
+    stats.push({
+      key: 'modalities',
+      icon: FileText,
+      label: t('Modalities'),
       value: (
-        <span className='font-mono tabular-nums'>
-          {formatCatalogTokenCount(maxOutput)}
+        <span className='inline-flex items-center gap-1'>
+          <ModalityLabels items={inputModalities} />
+          {inputModalities.length > 0 && outputModalities.length > 0 && (
+            <span className='text-muted-foreground/40'>→</span>
+          )}
+          <ModalityLabels items={outputModalities} />
         </span>
       ),
-      hint: t('Maximum tokens per response'),
     })
   }
 
@@ -351,47 +353,38 @@ function ModelBackendQuickStats(props: { model: PricingModel }) {
   if (stats.length === 0) return null
 
   return (
-    <section className={DETAIL_SECTION_CLASS}>
-      <div
-        className={cn(
-          'grid gap-2',
-          stats.length <= 2
-            ? 'grid-cols-1 sm:grid-cols-2'
-            : 'grid-cols-1 sm:grid-cols-2 @2xl/details:grid-cols-3'
-        )}
-      >
-        {stats.map((stat) => {
-          const Icon = stat.icon
-          return (
-            <div
-              key={stat.key}
-              className='bg-muted/20 flex min-w-0 flex-col gap-0.5 rounded-lg border px-3 py-2.5'
-            >
-              <span className='text-muted-foreground inline-flex min-w-0 items-center gap-1 text-xs font-medium'>
-                <Icon className='size-3.5 shrink-0 opacity-70' />
-                <span className='truncate'>{stat.label}</span>
+    <div className='bg-muted/20 grid grid-cols-2 gap-px overflow-hidden rounded-lg border @md/details:grid-cols-3 @2xl/details:grid-cols-5'>
+      {stats.map((stat) => {
+        const Icon = stat.icon
+        return (
+          <div
+            key={stat.key}
+            className='bg-background flex min-w-0 flex-col gap-0.5 px-3 py-2.5'
+          >
+            <span className='text-muted-foreground inline-flex min-w-0 items-center gap-1 text-[10px] font-medium tracking-wider uppercase'>
+              <Icon className='size-3 shrink-0' />
+              <span className='truncate'>{stat.label}</span>
+            </span>
+            <span className='text-foreground truncate text-sm font-semibold tabular-nums'>
+              {stat.value}
+            </span>
+            {stat.hint && (
+              <span className='text-muted-foreground/60 truncate text-[10px]'>
+                {stat.hint}
               </span>
-              <span className='text-foreground flex min-w-0 flex-wrap items-center gap-1 text-sm font-semibold'>
-                {stat.value}
-              </span>
-              {stat.hint && (
-                <span className='text-muted-foreground/70 truncate text-[11px]'>
-                  {stat.hint}
-                </span>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    </section>
+            )}
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
 function ModelBackendSignalsSection(props: { model: PricingModel }) {
   const { t } = useTranslation()
-  const capabilities = props.model.capabilities ?? []
-  const inputModalities = props.model.input_modalities ?? []
-  const outputModalities = props.model.output_modalities ?? []
+  const capabilities = normalizeCatalogItems(props.model.capabilities)
+  const inputModalities = normalizeCatalogItems(props.model.input_modalities)
+  const outputModalities = normalizeCatalogItems(props.model.output_modalities)
 
   if (
     capabilities.length === 0 &&
@@ -402,39 +395,48 @@ function ModelBackendSignalsSection(props: { model: PricingModel }) {
   }
 
   return (
-    <section className={DETAIL_SECTION_CLASS}>
-      <SectionTitle>{t('Supported features and modalities')}</SectionTitle>
-      {capabilities.length > 0 && (
-        <CatalogPillList
-          items={capabilities.map((capability) =>
-            t(CAPABILITY_LABEL_KEYS[capability] ?? capability)
-          )}
-        />
-      )}
-      {(inputModalities.length > 0 || outputModalities.length > 0) && (
-        <div className='grid gap-2 sm:grid-cols-2'>
-          {inputModalities.length > 0 && (
-            <div className='bg-muted/20 flex items-center gap-4 rounded-lg border px-3 py-2.5'>
-              <span className='text-muted-foreground shrink-0 text-xs font-medium'>
-                {t('Input')}
-              </span>
-              <span className='text-foreground min-w-0 text-xs font-medium'>
-                <ModalityLabels items={inputModalities} />
-              </span>
-            </div>
-          )}
-          {outputModalities.length > 0 && (
-            <div className='bg-muted/20 flex items-center gap-4 rounded-lg border px-3 py-2.5'>
-              <span className='text-muted-foreground shrink-0 text-xs font-medium'>
-                {t('Output')}
-              </span>
-              <span className='text-foreground min-w-0 text-xs font-medium'>
-                <ModalityLabels items={outputModalities} />
-              </span>
-            </div>
-          )}
-        </div>
-      )}
+    <section>
+      <SectionTitle>
+        {t('Capabilities')} / {t('Supported modalities')}
+      </SectionTitle>
+      <div className='grid gap-3 rounded-xl border p-3 @2xl/details:grid-cols-[minmax(0,1.5fr)_minmax(260px,1fr)]'>
+        {capabilities.length > 0 ? (
+          <CatalogPillList
+            items={capabilities.map((capability) =>
+              t(
+                CAPABILITY_LABEL_KEYS[capability as ModelCapability] ??
+                  capability
+              )
+            )}
+          />
+        ) : (
+          <div />
+        )}
+        {(inputModalities.length > 0 || outputModalities.length > 0) && (
+          <div className='grid gap-2 sm:grid-cols-2'>
+            {inputModalities.length > 0 && (
+              <div className='flex items-center justify-between gap-3 rounded-lg border px-3 py-2'>
+                <span className='text-muted-foreground text-xs font-medium'>
+                  {t('Input')}
+                </span>
+                <CatalogTextValue>
+                  <ModalityLabels items={inputModalities} />
+                </CatalogTextValue>
+              </div>
+            )}
+            {outputModalities.length > 0 && (
+              <div className='flex items-center justify-between gap-3 rounded-lg border px-3 py-2'>
+                <span className='text-muted-foreground text-xs font-medium'>
+                  {t('Output')}
+                </span>
+                <CatalogTextValue>
+                  <ModalityLabels items={outputModalities} />
+                </CatalogTextValue>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </section>
   )
 }
@@ -500,12 +502,22 @@ function ModelBackendProviderSection(props: { model: PricingModel }) {
   if (cells.length === 0) return null
 
   return (
-    <section className={DETAIL_SECTION_CLASS}>
-      <SectionTitle>{t('Model information')}</SectionTitle>
+    <section>
+      <SectionTitle>{t('Model')}</SectionTitle>
       <div className='border-border/60 bg-border/60 grid grid-cols-1 gap-px overflow-hidden rounded-lg border sm:grid-cols-2'>
         {cells}
       </div>
     </section>
+  )
+}
+
+function ModelBackendDetailsSection(props: { model: PricingModel }) {
+  return (
+    <>
+      <ModelBackendQuickStats model={props.model} />
+      <ModelBackendSignalsSection model={props.model} />
+      <ModelBackendProviderSection model={props.model} />
+    </>
   )
 }
 
@@ -827,13 +839,13 @@ function getDynamicPriceFields(
   tiers: DynamicPricingTier[],
   options: DynamicPriceOptions
 ) {
-  return [
-    ...new Map(
+  return Array.from(
+    new Map(
       tiers
         .flatMap((tier) => getDynamicPriceEntries(tier, options))
         .map((entry) => [entry.field, entry])
-    ).values(),
-  ]
+    ).values()
+  )
 }
 
 function getDynamicFormattedPricesByTier(
@@ -880,24 +892,19 @@ function GroupPricingSection(props: {
 
   const extraPriceTypes = useMemo(() => {
     const types: { label: string; type: PriceType }[] = []
-    if (props.model.cache_ratio != null) {
+    if (props.model.cache_ratio != null)
       types.push({ label: t('Cache'), type: 'cache' })
-    }
-    if (props.model.create_cache_ratio != null) {
+    if (props.model.create_cache_ratio != null)
       types.push({ label: t('Cache Write'), type: 'create_cache' })
-    }
-    if (props.model.image_ratio != null) {
+    if (props.model.image_ratio != null)
       types.push({ label: t('Image'), type: 'image' })
-    }
-    if (props.model.audio_ratio != null) {
+    if (props.model.audio_ratio != null)
       types.push({ label: t('Audio In'), type: 'audio_input' })
-    }
     if (
       props.model.audio_ratio != null &&
       props.model.audio_completion_ratio != null
-    ) {
+    )
       types.push({ label: t('Audio Out'), type: 'audio_output' })
-    }
     return types
   }, [props.model, t])
 
@@ -1055,7 +1062,7 @@ function GroupPricingSection(props: {
       <SectionTitle>{t('Pricing by Group')}</SectionTitle>
       <AutoGroupChain model={props.model} autoGroups={props.autoGroups} />
       <StaticDataTable
-        className='rounded-lg'
+        className='-mx-4 rounded-none border-0 sm:mx-0'
         tableClassName='text-sm'
         headerRowClassName='hover:bg-transparent'
         data={availableGroups}
@@ -1110,11 +1117,13 @@ function GroupPricingSection(props: {
               ]),
         ]}
       />
-      {isTokenBased && (
-        <p className='text-muted-foreground/40 mt-1.5 text-[10px]'>
-          {t('Prices shown per')} {tokenUnitLabel} tokens
-        </p>
-      )}
+      <div className='-mx-4 sm:mx-0'>
+        {isTokenBased && (
+          <p className='text-muted-foreground/40 mt-1.5 px-4 text-[10px] sm:px-0'>
+            {t('Prices shown per')} {tokenUnitLabel} tokens
+          </p>
+        )}
+      </div>
     </section>
   )
 }
@@ -1172,16 +1181,10 @@ export function ModelDetailsContent(props: ModelDetailsContentProps) {
           })}
         </TabsList>
 
-        <TabsContent value='overview' className='space-y-4 outline-none'>
-          <ModelBackendQuickStats model={props.model} />
-          <ModelBackendSignalsSection model={props.model} />
+        <TabsContent value='overview' className='space-y-6 outline-none'>
+          <OverviewSummaryGrid model={props.model} />
 
-          <section className={DETAIL_SECTION_CLASS}>
-            <SectionTitle>{t('Performance summary')}</SectionTitle>
-            <OverviewSummaryGrid model={props.model} />
-          </section>
-
-          <section className={DETAIL_SECTION_CLASS}>
+          <section className='bg-card/60 space-y-5 rounded-xl border p-4 shadow-sm'>
             <SectionTitle>{t('Pricing')}</SectionTitle>
             <PriceSection
               model={props.model}
@@ -1205,7 +1208,7 @@ export function ModelDetailsContent(props: ModelDetailsContentProps) {
             />
           </section>
 
-          <ModelBackendProviderSection model={props.model} />
+          <ModelBackendDetailsSection model={props.model} />
         </TabsContent>
 
         <TabsContent value='performance' className='outline-none'>
@@ -1296,16 +1299,14 @@ export function ModelDetails() {
             <Skeleton className='h-4 w-full max-w-md' />
           </div>
           <div className='mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4'>
-            {['metric-1', 'metric-2', 'metric-3', 'metric-4'].map((key) => (
-              <Skeleton key={key} className='h-16 w-full' />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className='h-16 w-full' />
             ))}
           </div>
           <div className='mt-6 space-y-3'>
-            {['section-1', 'section-2', 'section-3', 'section-4'].map(
-              (key) => (
-                <Skeleton key={key} className='h-24 w-full' />
-              )
-            )}
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className='h-24 w-full' />
+            ))}
           </div>
         </div>
       </PublicLayout>

@@ -34,12 +34,7 @@ import {
   getDynamicPricingSummary,
 } from '../lib/dynamic-price'
 import { parseTags } from '../lib/filters'
-import {
-  CAPABILITY_LABEL_KEYS,
-  formatCatalogTokenCount,
-  getCoreCapabilities,
-  isTokenBasedModel,
-} from '../lib/model-helpers'
+import { isTokenBasedModel } from '../lib/model-helpers'
 import {
   formatPrice,
   formatRequestPrice,
@@ -89,95 +84,13 @@ export function usePricingColumns(
         return (
           <div className='flex max-w-full min-w-0 items-center gap-2'>
             {modelIcon}
-            <div className='min-w-0'>
-              <div className='truncate font-mono text-sm font-medium'>
-                {model.model_name}
-              </div>
-              {model.vendor_name && (
-                <div className='text-muted-foreground truncate text-[11px]'>
-                  {model.vendor_name}
-                </div>
-              )}
-            </div>
+            <span className='truncate font-mono text-sm font-medium'>
+              {model.model_name}
+            </span>
           </div>
         )
       },
       minSize: 200,
-    },
-
-    // Context column
-    {
-      accessorKey: 'context_length',
-      meta: { label: t('Context') },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('Context')} />
-      ),
-      cell: ({ row }) => {
-        const label = formatCatalogTokenCount(row.original.context_length)
-        if (!label) {
-          return (
-            <span className='text-muted-foreground/60 text-xs'>
-              {t('Context pending')}
-            </span>
-          )
-        }
-        return (
-          <span className='font-mono text-sm font-medium tabular-nums'>
-            {label}
-          </span>
-        )
-      },
-      size: 100,
-      sortingFn: (a, b) =>
-        (a.original.context_length ?? 0) - (b.original.context_length ?? 0),
-    },
-
-    // Capabilities column
-    {
-      id: 'capabilities',
-      accessorFn: (row) => row.capabilities?.join(',') ?? '',
-      meta: { label: t('Capabilities') },
-      header: t('Capabilities'),
-      cell: ({ row }) => {
-        const { items, remaining } = getCoreCapabilities(
-          row.original.capabilities,
-          3
-        )
-        if (items.length === 0) {
-          return (
-            <span className='text-muted-foreground/60 text-xs'>
-              {t('Capabilities pending')}
-            </span>
-          )
-        }
-        return (
-          <BadgeListCell
-            items={[
-              ...items.map((capability) => (
-                <StatusBadge
-                  key={capability}
-                  label={t(CAPABILITY_LABEL_KEYS[capability] ?? capability)}
-                  autoColor={capability}
-                  size='sm'
-                  copyable={false}
-                />
-              )),
-              ...(remaining > 0
-                ? [
-                    <span
-                      key='more'
-                      className='text-muted-foreground/50 text-xs'
-                    >
-                      +{remaining}
-                    </span>,
-                  ]
-                : []),
-            ]}
-          />
-        )
-      },
-      size: 200,
-      enableSorting: false,
     },
 
     // Type column

@@ -35,11 +35,6 @@ type Model struct {
 	UpdatedTime  int64          `json:"updated_time" gorm:"bigint"`
 	DeletedAt    gorm.DeletedAt `json:"-" gorm:"index;uniqueIndex:uk_model_name_delete_at,priority:2"`
 
-	// 扩展字段（由 Buyer 同步）
-	ContextLength    int64  `json:"context_length,omitempty" gorm:"bigint;default:0"`
-	InputModalities  string `json:"input_modalities,omitempty" gorm:"type:varchar(255)"`
-	OutputModalities string `json:"output_modalities,omitempty" gorm:"type:varchar(255)"`
-
 	BoundChannels []BoundChannel `json:"bound_channels,omitempty" gorm:"-"`
 	EnableGroups  []string       `json:"enable_groups,omitempty" gorm:"-"`
 	QuotaTypes    []int          `json:"quota_types,omitempty" gorm:"-"`
@@ -220,23 +215,3 @@ func SearchModels(keyword string, vendor string, offset int, limit int) ([]*Mode
 	}
 	return models, total, nil
 }
-
-// GetModelMetadataMap 批量获取模型元数据（用于填充 API 响应的扩展字段）
-func GetModelMetadataMap(modelNames []string) (map[string]*Model, error) {
-	result := make(map[string]*Model)
-	if len(modelNames) == 0 {
-		return result, nil
-	}
-
-	var models []*Model
-	err := DB.Where("model_name IN ?", modelNames).Find(&models).Error
-	if err != nil {
-		return nil, err
-	}
-
-	for _, m := range models {
-		result[m.ModelName] = m
-	}
-	return result, nil
-}
-

@@ -24,7 +24,6 @@ import {
   ENDPOINT_TYPES,
 } from '../constants'
 import type { PricingModel } from '../types'
-import { CAPABILITY_LABEL_KEYS } from './model-helpers'
 
 // ----------------------------------------------------------------------------
 // Filter Utilities
@@ -40,45 +39,13 @@ export function filterBySearch(
   if (!query) return models
 
   const lowerQuery = query.toLowerCase()
-  return models.filter((m) => {
-    if (m.model_name?.toLowerCase().includes(lowerQuery)) return true
-    if (m.description?.toLowerCase().includes(lowerQuery)) return true
-    if (m.tags?.toLowerCase().includes(lowerQuery)) return true
-    if (m.vendor_name?.toLowerCase().includes(lowerQuery)) return true
-    if (
-      m.capabilities?.some((cap) => {
-        const label = CAPABILITY_LABEL_KEYS[cap] ?? cap
-        return (
-          cap.toLowerCase().includes(lowerQuery) ||
-          label.toLowerCase().includes(lowerQuery)
-        )
-      })
-    ) {
-      return true
-    }
-    if (
-      m.input_modalities?.some((item) =>
-        item.toLowerCase().includes(lowerQuery)
-      )
-    ) {
-      return true
-    }
-    if (
-      m.output_modalities?.some((item) =>
-        item.toLowerCase().includes(lowerQuery)
-      )
-    ) {
-      return true
-    }
-    if (
-      m.supported_endpoint_types?.some((item) =>
-        item.toLowerCase().includes(lowerQuery)
-      )
-    ) {
-      return true
-    }
-    return false
-  })
+  return models.filter(
+    (m) =>
+      m.model_name?.toLowerCase().includes(lowerQuery) ||
+      m.description?.toLowerCase().includes(lowerQuery) ||
+      m.tags?.toLowerCase().includes(lowerQuery) ||
+      m.vendor_name?.toLowerCase().includes(lowerQuery)
+  )
 }
 
 /**
@@ -152,26 +119,6 @@ export function sortModels(
       sorted.sort((a, b) =>
         (a.model_name || '').localeCompare(b.model_name || '')
       )
-      break
-    case SORT_OPTIONS.CONTEXT_LOW:
-      sorted.sort((a, b) => {
-        const aCtx = a.context_length ?? 0
-        const bCtx = b.context_length ?? 0
-        if (aCtx <= 0 && bCtx <= 0) return 0
-        if (aCtx <= 0) return 1
-        if (bCtx <= 0) return -1
-        return aCtx - bCtx
-      })
-      break
-    case SORT_OPTIONS.CONTEXT_HIGH:
-      sorted.sort((a, b) => {
-        const aCtx = a.context_length ?? 0
-        const bCtx = b.context_length ?? 0
-        if (aCtx <= 0 && bCtx <= 0) return 0
-        if (aCtx <= 0) return 1
-        if (bCtx <= 0) return -1
-        return bCtx - aCtx
-      })
       break
     case SORT_OPTIONS.PRICE_LOW:
       sorted.sort((a, b) => getModelPrice(a) - getModelPrice(b))

@@ -150,7 +150,7 @@ func getPreferredModelOwners(modelNames []string, groups []string) map[string]st
 	return owners
 }
 
-func buildOpenAIModel(modelName string, ownerByModel map[string]string, metadataByModel map[string]*model.Model) dto.OpenAIModels {
+func buildOpenAIModel(modelName string, ownerByModel map[string]string) dto.OpenAIModels {
 	var oaiModel dto.OpenAIModels
 	if staticModel, ok := openAIModelsMap[modelName]; ok {
 		oaiModel = staticModel
@@ -166,37 +166,6 @@ func buildOpenAIModel(modelName string, ownerByModel map[string]string, metadata
 		oaiModel.OwnedBy = owner
 	}
 	oaiModel.SupportedEndpointTypes = model.GetModelSupportEndpointTypes(modelName)
-
-	// 填充扩展字段（从 models 表的元数据）
-	if meta, ok := metadataByModel[modelName]; ok && meta != nil {
-		// 独立列字段
-		if meta.ContextLength > 0 {
-			cl := meta.ContextLength
-			oaiModel.ContextLength = &cl
-		}
-		oaiModel.InputModalities = meta.InputModalities
-		oaiModel.OutputModalities = meta.OutputModalities
-
-		// 从 endpoints JSON 解析的字段
-		if endpoints, err := meta.ParseEndpoints(); err == nil {
-			if endpoints.Limits != nil && endpoints.Limits.MaxOutput != nil {
-				oaiModel.MaxOutput = endpoints.Limits.MaxOutput
-			}
-			if endpoints.Capabilities != nil {
-				oaiModel.Capabilities = endpoints.Capabilities
-			}
-			if endpoints.Pricing != nil {
-				oaiModel.InputPrice = endpoints.Pricing.InputPrice
-				oaiModel.OutputPrice = endpoints.Pricing.OutputPrice
-				oaiModel.CachePrice = endpoints.Pricing.CachePrice
-			}
-			if endpoints.Lifecycle != nil {
-				oaiModel.LifecycleStatus = endpoints.Lifecycle.Status
-				oaiModel.LifecycleNotice = endpoints.Lifecycle.NoticeUrl
-			}
-		}
-	}
-
 	return oaiModel
 }
 
@@ -303,17 +272,9 @@ func ListModels(c *gin.Context, modelType int) {
 	if len(ownerGroups) > 0 {
 		ownerByModel = getPreferredModelOwners(userModelNames, ownerGroups)
 	}
-
-	// 批量获取模型元数据（用于填充扩展字段）
-	metadataByModel, err := model.GetModelMetadataMap(userModelNames)
-	if err != nil {
-		common.SysLog(fmt.Sprintf("GetModelMetadataMap error: %v", err))
-		metadataByModel = map[string]*model.Model{}
-	}
-
 	userOpenAiModels := make([]dto.OpenAIModels, 0, len(userModelNames))
 	for _, modelName := range userModelNames {
-		userOpenAiModels = append(userOpenAiModels, buildOpenAIModel(modelName, ownerByModel, metadataByModel))
+		userOpenAiModels = append(userOpenAiModels, buildOpenAIModel(modelName, ownerByModel))
 	}
 
 	switch modelType {
