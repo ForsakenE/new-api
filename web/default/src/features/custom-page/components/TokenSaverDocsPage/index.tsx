@@ -4,6 +4,12 @@ import { useTranslation } from "react-i18next";
 import { PublicLayout } from "@/components/layout";
 import { useTheme } from "@/context/theme-provider";
 import { resolveResourceLang } from "@/features/custom-page/lang";
+import {
+  resolvePublicApiBase,
+  withApiV1,
+} from "@/features/custom-page/public-api-base";
+import { useStatus } from "@/hooks/use-status";
+import { DEFAULT_SYSTEM_NAME } from "@/lib/constants";
 
 import ccSwitchConfirmImage from "./assets/tokensaver-cc-switch-confirm.png";
 import ccSwitchFillImage from "./assets/tokensaver-cc-switch-fill.png";
@@ -12,11 +18,6 @@ import overviewImage from "./assets/tokensaver-overview-screen.png";
 import logsImage from "./assets/tokensaver-usage-logs-screen.png";
 import i18nResources, { i18nKeys, type I18nKey } from "./i18n";
 import styles from "./index.module.css";
-
-const TOKENSAVER_ROOT = "https://www.tokensaver.net";
-const TOKENSAVER_V1 = "https://www.tokensaver.net/v1";
-const TOKENSAVER_KEYS = "https://www.tokensaver.net/keys";
-const TOKENSAVER_PRICING = "https://www.tokensaver.net/pricing";
 
 interface TokenSaverDocsPageProps {
   className?: string;
@@ -52,13 +53,19 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
   const { i18n } = useTranslation();
 
   const lang = resolveResourceLang(i18n.language);
+  const { status } = useStatus();
+  const brand = status?.system_name?.trim() || DEFAULT_SYSTEM_NAME;
+  const apiRoot = resolvePublicApiBase(status);
+  const apiV1 = withApiV1(apiRoot);
+  const portalOrigin =
+    typeof window === "undefined" ? "/" : window.location.origin;
 
   const t = (key: I18nKey): string => {
-    return (
+    const raw =
       i18nResources[key]?.[lang] ??
       i18nResources[key]?.[lang?.split("-")?.[0]] ??
-      ""
-    );
+      "";
+    return raw.replaceAll("TokenSaver", brand);
   };
   const themeClass = resolvedTheme === "dark" ? styles.dark : styles.light;
   const containerClassName = [
@@ -165,13 +172,13 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
               <pre className={styles.pre}>
                 <code
                   className={styles.preCode}
-                >{`curl ${TOKENSAVER_V1}/chat/completions \\
+                >{`curl ${apiV1}/chat/completions \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -d '{
     "model": "gpt-5.5",
     "messages": [
-      {"role": "user", "content": "你好，用一句话介绍 TokenSaver"}
+      {"role": "user", "content": "你好，用一句话介绍 ${brand}"}
     ]
   }'`}</code>
               </pre>
@@ -225,8 +232,8 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
               <ol className={styles.steps}>
                 <li>
                   {t(i18nKeys.quickStartStep1Before)}
-                  <a href={TOKENSAVER_ROOT} target="_blank" rel="noreferrer">
-                    <Code>www.tokensaver.net</Code>
+                  <a href={portalOrigin} target="_blank" rel="noreferrer">
+                    <Code>{portalOrigin}</Code>
                   </a>
                   {t(i18nKeys.quickStartStep1After)}
                 </li>
@@ -236,18 +243,18 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
                   {t(i18nKeys.quickStartStep2Middle)}
                   <Code>{t(i18nKeys.apiKeysMenu)}</Code>
                   {t(i18nKeys.quickStartStep2After)}
-                  <InlineAction href={TOKENSAVER_KEYS}>
+                  <InlineAction href={"/keys"}>
                     {t(i18nKeys.createApiKeyCta)}
                   </InlineAction>
                 </li>
                 <li>
                   {t(i18nKeys.quickStartStep3Before)}
-                  <Code>{TOKENSAVER_V1}</Code>
+                  <Code>{apiV1}</Code>
                   {t(i18nKeys.quickStartStep3After)}
                 </li>
                 <li>
                   {t(i18nKeys.quickStartStep4Before)}
-                  <Code>{TOKENSAVER_ROOT}</Code>
+                  <Code>{apiRoot}</Code>
                   {t(i18nKeys.quickStartStep4After)}
                 </li>
                 <li>
@@ -263,7 +270,7 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
                   </strong>
                   <p className={styles.paragraph}>
                     {t(i18nKeys.quickStartCardOpenAiBefore)}
-                    <Code>{TOKENSAVER_V1}</Code>
+                    <Code>{apiV1}</Code>
                     {t(i18nKeys.quickStartCardOpenAiAfter)}
                   </p>
                 </div>
@@ -273,7 +280,7 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
                   </strong>
                   <p className={styles.paragraph}>
                     {t(i18nKeys.quickStartCardClaudeBefore)}
-                    <Code>{TOKENSAVER_ROOT}</Code>
+                    <Code>{apiRoot}</Code>
                     {t(i18nKeys.quickStartCardClaudeMiddle)}
                     <Code>/v1</Code>
                     {t(i18nKeys.quickStartCardClaudeAfter)}
@@ -291,7 +298,7 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
                 {t(i18nKeys.modelsLeadBefore)}
                 <Code>model</Code>
                 {t(i18nKeys.modelsLeadMiddle)}
-                <InlineAction href={TOKENSAVER_PRICING}>
+                <InlineAction href={"/pricing"}>
                   {t(i18nKeys.modelSquareCta)}
                 </InlineAction>
                 {t(i18nKeys.modelsLeadAfter)}
@@ -343,7 +350,7 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
               <ol className={styles.steps}>
                 <li>
                   {t(i18nKeys.ccSwitchStep1Before)}
-                  <InlineAction href={TOKENSAVER_KEYS}>
+                  <InlineAction href={"/keys"}>
                     {t(i18nKeys.apiKeysCta)}
                   </InlineAction>
                   {t(i18nKeys.ccSwitchStep1After)}
@@ -408,9 +415,9 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
               </p>
               <div className={styles.note}>
                 {t(i18nKeys.ccSwitchNoteBefore)}
-                <Code>{TOKENSAVER_V1}</Code>
+                <Code>{apiV1}</Code>
                 {t(i18nKeys.ccSwitchNoteMiddle)}
-                <Code>{TOKENSAVER_ROOT}</Code>
+                <Code>{apiRoot}</Code>
                 {t(i18nKeys.ccSwitchNoteAfter)}
               </div>
             </div>
@@ -424,7 +431,7 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
                 {t(i18nKeys.sdkLeadBefore)}
                 <Code>model</Code>
                 {t(i18nKeys.sdkLeadAfter)}{" "}
-                <InlineAction href={TOKENSAVER_PRICING}>
+                <InlineAction href={"/pricing"}>
                   {t(i18nKeys.modelSquareCta)}
                 </InlineAction>
               </p>
@@ -435,7 +442,7 @@ const TokenSaverDocsPage: React.FC<TokenSaverDocsPageProps> = ({
 
 client = OpenAI(
     api_key="YOUR_API_KEY",
-    base_url="${TOKENSAVER_V1}",
+    base_url="${apiV1}",
 )
 
 completion = client.chat.completions.create(
@@ -459,7 +466,7 @@ print(completion.choices[0].message.content)`}</code>
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "你好，我是通过 TokenSaver 调用的模型。"
+        "content": "你好，我是通过 ${brand} 调用的模型。"
       },
       "finish_reason": "stop"
     }
@@ -478,7 +485,7 @@ print(completion.choices[0].message.content)`}</code>
                   className={styles.preCode}
                 >{`stream = client.chat.completions.create(
     model="gpt-5.5",
-    messages=[{"role": "user", "content": "用一句话介绍 TokenSaver"}],
+    messages=[{"role": "user", "content": "用一句话介绍 ${brand}"}],
     stream=True,
 )
 
@@ -494,7 +501,7 @@ for chunk in stream:
 
 const client = new OpenAI({
   apiKey: "YOUR_API_KEY",
-  baseURL: "${TOKENSAVER_V1}",
+  baseURL: "${apiV1}",
 });
 
 const completion = await client.chat.completions.create({
@@ -511,7 +518,7 @@ console.log(completion.choices[0].message.content);`}</code>
               <pre className={styles.pre}>
                 <code
                   className={styles.preCode}
-                >{`curl ${TOKENSAVER_ROOT}/v1/messages \\
+                >{`curl ${apiRoot}/v1/messages \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "anthropic-version: 2023-06-01" \\
@@ -618,13 +625,13 @@ console.log(completion.choices[0].message.content);`}</code>
                     <tr>
                       <td>{t(i18nKeys.apiBaseUrlOpenAiClient)}</td>
                       <td>
-                        <Code>{TOKENSAVER_V1}</Code>
+                        <Code>{apiV1}</Code>
                       </td>
                     </tr>
                     <tr>
                       <td>{t(i18nKeys.apiBaseUrlClaudeClient)}</td>
                       <td>
-                        <Code>{TOKENSAVER_ROOT}</Code>
+                        <Code>{apiRoot}</Code>
                       </td>
                     </tr>
                   </tbody>
@@ -767,7 +774,7 @@ console.log(completion.choices[0].message.content);`}</code>
                       </td>
                       <td>
                         {t(i18nKeys.faqClaudeActionBefore)}
-                        <Code>{TOKENSAVER_ROOT}</Code>
+                        <Code>{apiRoot}</Code>
                         {t(i18nKeys.faqClaudeActionAfter)}
                       </td>
                     </tr>

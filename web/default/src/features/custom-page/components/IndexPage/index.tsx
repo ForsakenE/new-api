@@ -6,6 +6,9 @@ import type { I18nKey } from "./i18n";
 import styles from "./index.module.css";
 import { PublicLayout } from "@/components/layout";
 import { resolveResourceLang } from "@/features/custom-page/lang";
+import { resolvePublicApiBase } from "@/features/custom-page/public-api-base";
+import { useStatus } from "@/hooks/use-status";
+import { DEFAULT_SYSTEM_NAME } from "@/lib/constants";
 
 interface IndexPageProps {
   className?: string;
@@ -17,13 +20,16 @@ const IndexPage: React.FC<IndexPageProps> = ({ className, style }) => {
   const { i18n } = useTranslation();
 
   const lang = resolveResourceLang(i18n.language);
+  const { status } = useStatus();
+  const brand = status?.system_name?.trim() || DEFAULT_SYSTEM_NAME;
+  const exampleBase = resolvePublicApiBase(status);
 
   const t = (key: I18nKey): string => {
-    return (
+    const raw =
       i18nResources[key]?.[lang] ??
       i18nResources[key]?.[lang?.split("-")?.[0]] ??
-      ""
-    );
+      "";
+    return raw.replaceAll("{{systemName}}", brand);
   };
 
   const themeClass = resolvedTheme === "dark" ? styles.dark : styles.light;
@@ -160,7 +166,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ className, style }) => {
 
               <div
                 className={styles.heroVisual}
-                aria-label="TokenSaver Smart Route Illustration"
+                aria-label={`${brand} Smart Route Illustration`}
               >
                 <div className={styles.logoStage} aria-hidden="true">
                   <img
@@ -218,7 +224,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ className, style }) => {
                           <span className={styles.codeGreen}>curl</span>
                           <span className={styles.codeBlue}> -X POST </span>
                           <span className={styles.codeAmber}>
-                            "https://www.tokensaver.net{tabs[activeTab].path}"
+                            "{exampleBase}{tabs[activeTab].path}"
                           </span>
                           <span className={styles.codeBlue}> \</span>
                           {"\n"}
