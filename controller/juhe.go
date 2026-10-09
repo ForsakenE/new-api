@@ -9,7 +9,6 @@ import (
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -128,16 +127,14 @@ func JuheWeChatCallback(c *gin.Context) {
 	}
 
 	socialUID := cbResp.SocialUID
-	session := sessions.Default(c)
 
-	// 已登录用户 → 绑定流程
-	if username := session.Get("username"); username != nil {
+	// 已登录用户 → 绑定流程。身份来自 TryUserAuth，不再读已删除的 cookie session。
+	if id := c.GetInt("id"); id > 0 {
 		if model.IsWeChatIdAlreadyTaken(socialUID) {
 			c.JSON(http.StatusOK, gin.H{"success": false, "message": "该微信账号已被绑定"})
 			return
 		}
-		id := session.Get("id")
-		user := model.User{Id: id.(int)}
+		user := model.User{Id: id}
 		if err := user.FillUserById(); err != nil {
 			common.ApiError(c, err)
 			return
@@ -185,5 +182,5 @@ func JuheWeChatCallback(c *gin.Context) {
 		return
 	}
 
-	setupLogin(&user, c)
+	setupLogin(&user, nil, c)
 }
