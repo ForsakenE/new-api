@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/i18n"
 	"github.com/QuantumNous/new-api/model"
 	"github.com/gin-gonic/gin"
 )
@@ -52,7 +51,7 @@ func (p *WeChatOpenProvider) IsEnabled() bool {
 // WeChat uses GET with URL params instead of POST body.
 func (p *WeChatOpenProvider) ExchangeToken(ctx context.Context, code string, c *gin.Context) (*OAuthToken, error) {
 	if code == "" {
-		return nil, NewOAuthError(i18n.MsgOAuthInvalidCode, nil)
+		return nil, NewOAuthError(common.NewMessage(msgInvalidCode))
 	}
 
 	params := url.Values{}
@@ -70,7 +69,7 @@ func (p *WeChatOpenProvider) ExchangeToken(ctx context.Context, code string, c *
 	client := http.Client{Timeout: 20 * time.Second}
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, NewOAuthErrorWithRaw(i18n.MsgOAuthConnectFailed, map[string]any{"Provider": "WeChat"}, err.Error())
+		return nil, NewOAuthErrorWithRaw(common.NewMessage(msgConnectFailed, map[string]any{"provider": "WeChat"}), err.Error())
 	}
 	defer res.Body.Close()
 
@@ -85,11 +84,11 @@ func (p *WeChatOpenProvider) ExchangeToken(ctx context.Context, code string, c *
 	}
 
 	if tokenResp.ErrCode != 0 {
-		return nil, NewOAuthErrorWithRaw(i18n.MsgOAuthTokenFailed, map[string]any{"Provider": "WeChat"}, tokenResp.ErrMsg)
+		return nil, NewOAuthErrorWithRaw(common.NewMessage(msgTokenFailed, map[string]any{"provider": "WeChat"}), tokenResp.ErrMsg)
 	}
 
 	if tokenResp.AccessToken == "" || tokenResp.OpenID == "" {
-		return nil, NewOAuthError(i18n.MsgOAuthTokenFailed, map[string]any{"Provider": "WeChat"})
+		return nil, NewOAuthError(common.NewMessage(msgTokenFailed, map[string]any{"provider": "WeChat"}))
 	}
 
 	// Store openid in IDToken field so GetUserInfo can use it
@@ -108,7 +107,7 @@ func (p *WeChatOpenProvider) ExchangeToken(ctx context.Context, code string, c *
 func (p *WeChatOpenProvider) GetUserInfo(ctx context.Context, token *OAuthToken) (*OAuthUser, error) {
 	openID := token.IDToken
 	if openID == "" {
-		return nil, NewOAuthError(i18n.MsgOAuthGetUserErr, map[string]any{"Provider": "WeChat"})
+		return nil, NewOAuthError(common.NewMessage(msgGetUserFailed))
 	}
 
 	params := url.Values{}
@@ -125,7 +124,7 @@ func (p *WeChatOpenProvider) GetUserInfo(ctx context.Context, token *OAuthToken)
 	client := http.Client{Timeout: 20 * time.Second}
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, NewOAuthErrorWithRaw(i18n.MsgOAuthConnectFailed, map[string]any{"Provider": "WeChat"}, err.Error())
+		return nil, NewOAuthErrorWithRaw(common.NewMessage(msgConnectFailed, map[string]any{"provider": "WeChat"}), err.Error())
 	}
 	defer res.Body.Close()
 
@@ -140,7 +139,7 @@ func (p *WeChatOpenProvider) GetUserInfo(ctx context.Context, token *OAuthToken)
 	}
 
 	if userInfo.ErrCode != 0 {
-		return nil, NewOAuthErrorWithRaw(i18n.MsgOAuthGetUserErr, map[string]any{"Provider": "WeChat"}, userInfo.ErrMsg)
+		return nil, NewOAuthErrorWithRaw(common.NewMessage(msgGetUserFailed), userInfo.ErrMsg)
 	}
 
 	// Use unionid as the stable cross-app identifier; fall back to openid if unavailable
@@ -150,7 +149,7 @@ func (p *WeChatOpenProvider) GetUserInfo(ctx context.Context, token *OAuthToken)
 	}
 
 	if providerUserID == "" {
-		return nil, NewOAuthError(i18n.MsgOAuthUserInfoEmpty, map[string]any{"Provider": "WeChat"})
+		return nil, NewOAuthError(common.NewMessage(msgUserInfoEmpty, map[string]any{"provider": "WeChat"}))
 	}
 
 	return &OAuthUser{
